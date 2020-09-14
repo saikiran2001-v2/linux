@@ -19,6 +19,130 @@
 
 #define USB_MAXCONFIG			8	/* Arbitrary limit */
 
+/* A struct associated with the interrupt_interval_override module parameter, representing
+ * an user's choice to force a specific interrupt interval upon all interrupt endpoints of
+ * a certain device.
+ */
+struct interrupt_interval_override {
+	u16 vendor;
+	u16 product;
+	unsigned int interval;
+};
+
+static DEFINE_MUTEX(interrupt_interval_override_mutex);
+static char interrupt_interval_override_param[128];
+static struct interrupt_interval_override *interrupt_interval_override_list;
+static size_t interrupt_interval_override_count;
+
+static int interrupt_interval_override_param_set(const char *value,
+						 const struct kernel_param *kp)
+{
+	const char *p;
+	unsigned short vendor, product;
+	unsigned int interval;
+	struct interrupt_interval_override *list;
+	struct interrupt_interval_override param;
+	size_t count, max_count, i, len;
+	int err, res;
+
+	mutex_lock(&interrupt_interval_override_mutex);
+
+	if (!value || !*value) {
+		kfree(interrupt_interval_override_list);
+		interrupt_interval_override_list = NULL;
+		interrupt_interval_override_count = 0;
+		param_set_copystring(value, kp);
+		mutex_unlock(&interrupt_interval_override_mutex);
+		return 0;
+	}
+
+	for (max_count = 1, i = 0; value[i]; i++) {
+		if (value[i] == ',')
+			max_count++;
+	}
+
+	list = kcalloc(max_count, sizeof(*list), GFP_KERNEL);
+	if (!list) {
+		mutex_unlock(&interrupt_interval_override_mutex);
+		return -ENOMEM;
+	}
+
+	err = param_set_copystring(value, kp);
+	if (err) {
+		kfree(list);
+		mutex_unlock(&interrupt_interval_override_mutex);
+		return err;
+	}
+
+	for (count = 0, p = value; p && *p;) {
+		res = sscanf(p, "%hx:%hx:%d%zn", &vendor, &product, &interval, &len);
+		if (res != 3) {
+			pr_warn("Error while parsing USB interrupt interval override parameter %s.\n",
+				value);
+			break;
+		}
+
+		param.vendor = vendor;
+		param.product = product;
+		param.interval = interval;
+		list[count++] = param;
+
+		p += len;
+		if (*p == ',' && *(p + 1) != '\0') {
+			p++;
+			continue;
+		} else if (*p == '\0' || (*p == '\n' && *(p + 1) == '\0')) {
+			break;
+		} else {
+			pr_warn("Error while parsing USB interrupt interval override parameter %s.\n",
+				value);
+			break;
+		}
+	}
+
+	kfree(interrupt_interval_override_list);
+	interrupt_interval_override_list = list;
+	interrupt_interval_override_count = count;
+	mutex_unlock(&interrupt_interval_override_mutex);
+	return 0;
+}
+
+static const struct kernel_param_ops interrupt_interval_override_param_ops = {
+	.set = interrupt_interval_override_param_set,
+	.get = param_get_string,
+};
+
+static struct kparam_string interrupt_interval_override_param_string = {
+	.maxlen = sizeof(interrupt_interval_override_param),
+	.string = interrupt_interval_override_param,
+};
+
+device_param_cb(interrupt_interval_override, &interrupt_interval_override_param_ops,
+		&interrupt_interval_override_param_string, 0644);
+MODULE_PARM_DESC(interrupt_interval_override,
+		 "Override the polling interval of all interrupt-type endpoints of a specific USB"
+		 " device by specifying interrupt_interval_override=vendorID:productID:interval.");
+
+static unsigned int usb_check_interrupt_interval_override(struct usb_device *udev)
+{
+	size_t i;
+	unsigned int res;
+	u16 vendor = le16_to_cpu(udev->descriptor.idVendor);
+	u16 product = le16_to_cpu(udev->descriptor.idProduct);
+
+	mutex_lock(&interrupt_interval_override_mutex);
+	for (i = 0; i < interrupt_interval_override_count; i++) {
+		if (interrupt_interval_override_list[i].vendor == vendor &&
+		    interrupt_interval_override_list[i].product == product) {
+			res = interrupt_interval_override_list[i].interval;
+			mutex_unlock(&interrupt_interval_override_mutex);
+			return res;
+		}
+	}
+	mutex_unlock(&interrupt_interval_override_mutex);
+	return 0;
+}
+
 static int find_next_descriptor(unsigned char *buffer, int size,
     int dt1, int dt2, int *num_skipped)
 {
@@ -285,7 +409,7 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno,
 	struct usb_endpoint_descriptor *d;
 	struct usb_host_endpoint *endpoint;
 	int n, i, j, retval;
-	unsigned int maxp;
+	unsigned int maxp, ival;
 	const unsigned short *maxpacket_maxes;
 	u16 bcdUSB;
 
@@ -422,6 +546,23 @@ static int usb_parse_endpoint(struct device *ddev, int cfgno,
 		    cfgno, inum, asnum,
 		    d->bEndpointAddress, d->bInterval, n);
 		endpoint->desc.bInterval = n;
+	}
+
+	/* Override the interrupt polling interval if a module parameter tells us to do so. */
+	if (usb_endpoint_xfer_int(d)) {
+		ival = usb_check_interrupt_interval_override(udev);
+		if (ival > 0) {
+			switch (udev->speed) {
+			case USB_SPEED_SUPER_PLUS:
+			case USB_SPEED_SUPER:
+			case USB_SPEED_HIGH:
+				endpoint->desc.bInterval = fls(ival) + 3;
+				break;
+			default: /* USB_SPEED_FULL or _LOW */
+				endpoint->desc.bInterval = ival;
+				break;
+			}
+		}
 	}
 
 	/* Some buggy low-speed devices have Bulk endpoints, which is
@@ -1144,4 +1285,13 @@ skip_to_next_descriptor:
 err:
 	usb_release_bos_descriptor(dev);
 	return ret;
+}
+
+void usb_release_interrupt_interval_override_list(void)
+{
+	mutex_lock(&interrupt_interval_override_mutex);
+	kfree(interrupt_interval_override_list);
+	interrupt_interval_override_list = NULL;
+	interrupt_interval_override_count = 0;
+	mutex_unlock(&interrupt_interval_override_mutex);
 }
