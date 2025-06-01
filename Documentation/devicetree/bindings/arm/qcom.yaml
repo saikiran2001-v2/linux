@@ -1085,6 +1085,12 @@ properties:
 
       - items:
           - enum:
+              - acer,swift-sf14-11
+              - asus,zenbook-a14-ux3407qa
+          - const: qcom,x1p64100
+
+      - items:
+          - enum:
               - qcom,hamoa-iot-evk
           - const: qcom,hamoa-iot-som
           - const: qcom,x1e80100
