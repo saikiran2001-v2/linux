@@ -839,7 +839,7 @@ static struct zynqmp_r5_core *zynqmp_r5_alloc_rproc_core(struct device *cdev)
 
 	r5_rproc->recovery_disabled = true;
 	r5_rproc->has_iommu = false;
-	r5_rproc->auto_boot = false;
+	r5_rproc->auto_boot = RPROC_AUTO_BOOT_DISABLED;
 
 	/* attempt to boot automatically if the firmware-name is provided */
 	if (fw_name)
