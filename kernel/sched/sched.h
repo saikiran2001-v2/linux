@@ -1624,7 +1624,7 @@ static inline void raw_spin_rq_lock(struct rq *rq)
 }
 
 static inline void raw_spin_rq_unlock(struct rq *rq)
-	__releases(__rq_lockp(rq))
+        __releases(__rq_lockp(rq))
 {
 	raw_spin_unlock(rq_lockp(rq));
 }
