@@ -709,6 +709,7 @@ ifeq ($(do_tools_cpupower),true)
 		$(toolspkgdir)/usr/lib/$(DEB_SOURCE)-tools-$(abi_release)
 endif
 ifeq ($(do_tools_rtla),true)
+	install -m755 $(builddirpa)/tools/tracing/rtla/rtla \
 		$(toolspkgdir)/usr/lib/$(DEB_SOURCE)-tools-$(abi_release)/rtla
 endif
 ifeq ($(do_tools_perf),true)
