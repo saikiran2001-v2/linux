@@ -183,3 +183,6 @@ sphinx_*/
 
 # Rust analyzer configuration
 /rust-project.json
+# Kernel build artifacts
+build-logs/
+fakeroot.state
