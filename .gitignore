@@ -187,3 +187,7 @@ sphinx_*/
 
 # bc language scripts (not LLVM bitcode)
 !kernel/time/timeconst.bc
+
+# Kernel build artifacts
+build-logs/
+fakeroot.state
