@@ -7758,7 +7758,7 @@ create_stream_for_sink(struct drm_connector *connector,
 
 	if (stream->signal == SIGNAL_TYPE_HDMI_TYPE_A ||
 	    stream->signal == SIGNAL_TYPE_HDMI_FRL)
-		mod_build_hf_vsif_infopacket(stream, &stream->vsp_infopacket, false, false);
+		mod_build_hf_vsif_infopacket(stream, &stream->hfvsif_infopacket, false, false);
 
 	if (stream->signal == SIGNAL_TYPE_DISPLAY_PORT ||
 	    stream->signal == SIGNAL_TYPE_DISPLAY_PORT_MST ||
@@ -13892,7 +13892,7 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
 
 		if (pcon_allowed) {
 			amdgpu_dm_connector->pack_sdp_v1_3 = true;
-			amdgpu_dm_connector->as_type = FREESYNC_TYPE_PCON_IN_WHITELIST;
+			amdgpu_dm_connector->as_type = ADAPTIVE_SYNC_TYPE_PCON_ALLOWED;
 		}
 
 		sink->edid_caps.freesync_vcp_code = vsdb_info.freesync_mccs_vcp_code;
