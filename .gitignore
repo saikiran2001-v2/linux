@@ -186,3 +186,9 @@ sphinx_*/
 # Kernel build artifacts
 build-logs/
 fakeroot.state
+
+# Local build logs
+build-test.log
+
+# fakeroot temporary state files
+fakeroot.state.*
