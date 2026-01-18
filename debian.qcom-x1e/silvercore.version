@@ -1,0 +1,4 @@
+# SilverCore Kernel Version
+# Format: MAJOR.MINOR.BUILD
+SILVERCORE_VERSION=1.0
+SILVERCORE_BUILD=0
