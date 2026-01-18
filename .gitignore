@@ -197,3 +197,4 @@ build-test.log
 
 # fakeroot temporary state files
 fakeroot.state.*
+*.backup
