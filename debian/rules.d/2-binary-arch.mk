@@ -207,7 +207,6 @@ ifeq ($(do_stubble),true)
 		--devicetree-auto=$(build_dir)/arch/arm64/boot/dts/qcom/x1e80100-microsoft-romulus15.dtb \
 		--devicetree-auto=$(build_dir)/arch/arm64/boot/dts/qcom/x1p42100-asus-zenbook-a14-lcd.dtb \
 		--devicetree-auto=$(build_dir)/arch/arm64/boot/dts/qcom/x1p42100-asus-zenbook-a14.dtb \
-		--devicetree-auto=$(build_dir)/arch/arm64/boot/dts/qcom/x1p64100-acer-swift-sf14-11.dtb \
 	        --output=$(build_dir)/$(kernfile).stubble
 
 	# The main image
