@@ -1,3 +1,9 @@
+linux-qcom-x1e (6.19.0-rc5-1.2) oracular; urgency=medium
+
+  * 
+
+ -- saikiran <saikiran@saikiran-Yoga-Slim-7-14Q8X9>  Sun, 18 Jan 2026 11:43:47 +0530
+
 linux-qcom-x1e (6.19.0-rc5-1.1) oracular; urgency=medium
 
   * Update to kernel 6.19.0-rc5
