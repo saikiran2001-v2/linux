@@ -176,12 +176,7 @@ enum dc_edid_status dm_helpers_parse_edid_caps(
 				  edid_caps->display_name,
 				  AUDIO_INFO_DISPLAY_NAME_SIZE_IN_CHARS);
 
-	if (connector->display_info.is_hdmi) {
-		edid_caps->edid_hdmi = true;
-		edid_caps->allm = connector->display_info.hdmi.allm;
-		edid_caps->fva = connector->display_info.hdmi.vrr_cap.fva;
-		edid_caps->hdmi_vrr = connector->display_info.hdmi.vrr_cap.supported;
-	}
+	edid_caps->edid_hdmi = connector->display_info.is_hdmi;
 
 	if (edid_caps->edid_hdmi)
 		populate_hdmi_info_from_connector(&connector->display_info.hdmi, edid_caps);
@@ -1488,14 +1483,13 @@ static bool dm_helpers_is_vrr_pcon_allowlist(const uint32_t branch_dev_id)
 	case DP_BRANCH_DEVICE_ID_90CC24:
 	case DP_BRANCH_DEVICE_ID_001CF8:
 	case DP_BRANCH_DEVICE_ID_001FF2:
-	case DP_BRANCH_DEVICE_ID_2B02F0:
 		return true;
 	}
 
 	return false;
 }
 
-bool dm_helpers_is_vrr_pcon_compatible(const struct dc_link *link, const struct drm_device *dev)
+bool dm_helpers_is_vrr_pcon_compatible(const struct dc_link *link)
 {
 	if (link->dpcd_caps.dongle_type != DISPLAY_DONGLE_DP_HDMI_CONVERTER)
 		return false;
@@ -1508,12 +1502,6 @@ bool dm_helpers_is_vrr_pcon_compatible(const struct dc_link *link, const struct 
 
 	if (dm_helpers_is_vrr_pcon_allowlist(link->dpcd_caps.branch_dev_id))
 		return true;
-
-	if (link->dc->debug.override_pcon_vrr_id_check) {
-		drm_info(dev, "Overriding VRR PCON check for ID: 0x%06x\n",
-			 link->dpcd_caps.branch_dev_id);
-		return true;
-	}
 
 	return false;
 }
