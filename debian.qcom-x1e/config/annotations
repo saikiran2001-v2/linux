@@ -5875,11 +5875,10 @@ CONFIG_LCD_VGG2432A4                            policy<{'arm64': 'm'}>
 CONFIG_LDISC_AUTOLOAD                           policy<{'arm64': 'y'}>
 CONFIG_LDM_DEBUG                                policy<{'arm64': 'n'}>
 CONFIG_LDM_PARTITION                            policy<{'arm64': 'y'}>
-CONFIG_LD_CAN_USE_KEEP_IN_OVERLAY               policy<{'arm64': 'y'}>
-CONFIG_LD_IS_BFD                                policy<{'arm64': 'y'}>
+CONFIG_LD_IS_LLD                                policy<{'arm64': 'y'}>
 CONFIG_LD_ORPHAN_WARN                           policy<{'arm64': 'y'}>
 CONFIG_LD_ORPHAN_WARN_LEVEL                     policy<{'arm64': '"warn"'}>
-CONFIG_LD_VERSION                               policy<{'arm64': '24500'}>
+CONFIG_LD_VERSION                               policy<{'arm64': '0'}>
 CONFIG_LEDS_88PM860X                            policy<{'arm64': 'm'}>
 CONFIG_LEDS_AAT1290                             policy<{'arm64': 'm'}>
 CONFIG_LEDS_ADP5520                             policy<{'arm64': 'm'}>
@@ -6028,7 +6027,7 @@ CONFIG_LITEX_SOC_CONTROLLER                     policy<{'arm64': 'm'}>
 CONFIG_LKDTM                                    policy<{'arm64': 'n'}>
 CONFIG_LLC                                      policy<{'arm64': 'm'}>
 CONFIG_LLC2                                     policy<{'arm64': 'm'}>
-CONFIG_LLD_VERSION                              policy<{'arm64': '0'}>
+CONFIG_LLD_VERSION                              policy<{'arm64': '200108'}>
 CONFIG_LMK04832                                 policy<{'arm64': 'm'}>
 CONFIG_LMP91000                                 policy<{'arm64': 'm'}>
 CONFIG_LOAD_UEFI_KEYS                           policy<{'arm64': 'y'}>
