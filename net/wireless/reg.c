@@ -1729,29 +1729,8 @@ static uint32_t reg_rule_to_chan_bw_flags(const struct ieee80211_regdomain *regd
 			edge_offset = (center_freq_khz - ch_bw / 2) -
 				      freq_range->start_freq_khz;
 			if (edge_offset % ch_bw == 0) {
-				switch (KHZ_TO_MHZ(ch_bw)) {
-				case 1:
-					bw_flags |= IEEE80211_CHAN_1MHZ;
-					break;
-				case 2:
-					bw_flags |= IEEE80211_CHAN_2MHZ;
-					break;
-				case 4:
-					bw_flags |= IEEE80211_CHAN_4MHZ;
-					break;
-				case 8:
-					bw_flags |= IEEE80211_CHAN_8MHZ;
-					break;
-				case 16:
-					bw_flags |= IEEE80211_CHAN_16MHZ;
-					break;
-				default:
-					/* If we got here, no bandwidths fit on
-					 * this frequency, ie. band edge.
-					 */
-					bw_flags |= IEEE80211_CHAN_DISABLED;
-					break;
-				}
+				/* Bandwidth detection disabled - 6.19 doesn't have 
+				 * IEEE80211_CHAN_xMHZ flags from 6.16 */
 				break;
 			}
 			ch_bw /= 2;
