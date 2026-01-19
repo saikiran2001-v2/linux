@@ -1,3 +1,9 @@
+linux-qcom-x1e (6.19.0-rc5-2.1) oracular; urgency=medium
+
+  * Bump ABI for next build (auto-bumped after successful build)
+
+ -- Saikiran <bjsaikiran@gmail.com>  Mon, 19 Jan 2026 21:18:54 +0530
+
 linux-qcom-x1e (6.19.0-rc5-1.10) oracular; urgency=medium
 
   * Automated build after upstream merge
