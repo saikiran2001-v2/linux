@@ -1,6 +1,7 @@
-linux-qcom-x1e (6.19.0-rc5-2.1) oracular; urgency=medium
+linux-qcom-x1e (6.19.0-rc5-1.11) oracular; urgency=medium
 
-  * Bump ABI for next build (auto-bumped after successful build)
+  * wifi: Copy working 6.16 regulatory drivers (fixes 5GHz)
+  * camera: Fix OV02C10 Bayer pattern to SBGGR10 (BGGR)
 
  -- Saikiran <bjsaikiran@gmail.com>  Mon, 19 Jan 2026 21:18:54 +0530
 
