@@ -629,8 +629,8 @@ ath12k_reg_update_weather_radar_band(struct ath12k_base *ab,
 	*rule_idx = i;
 }
 
-static void ath12k_reg_update_freq_range(struct ath12k_reg_freq *reg_freq,
-					 struct ath12k_reg_rule *reg_rule)
+static void ath12k_reg_apply_freq_range(struct ath12k_reg_freq *reg_freq,
+					struct ath12k_reg_rule *reg_rule)
 {
 	if (reg_freq->start_freq > reg_rule->start_freq)
 		reg_freq->start_freq = reg_rule->start_freq;
@@ -743,7 +743,7 @@ ath12k_reg_build_regd(struct ath12k_base *ab,
 			max_bw = min_t(u16, reg_rule->max_bw,
 				       reg_info->max_bw_2g);
 			flags = ath12k_get_bw_reg_flags(reg_info->max_bw_2g);
-			ath12k_reg_update_freq_range(&ab->reg_freq_2ghz, reg_rule);
+			ath12k_reg_apply_freq_range(&ab->reg_freq_2ghz, reg_rule);
 		} else if (reg_info->num_5g_reg_rules &&
 			   (j < reg_info->num_5g_reg_rules)) {
 			reg_rule = reg_info->reg_rules_5g_ptr + j++;
@@ -758,7 +758,7 @@ ath12k_reg_build_regd(struct ath12k_base *ab,
 			 */
 			flags = NL80211_RRF_AUTO_BW |
 				ath12k_get_bw_reg_flags(reg_info->max_bw_5g);
-			ath12k_reg_update_freq_range(&ab->reg_freq_5ghz, reg_rule);
+			ath12k_reg_apply_freq_range(&ab->reg_freq_5ghz, reg_rule);
 		} else if (reg_info->is_ext_reg_event && reg_6ghz_number &&
 			   (k < reg_6ghz_number)) {
 			reg_rule = reg_rule_6ghz + k++;
@@ -767,7 +767,7 @@ ath12k_reg_build_regd(struct ath12k_base *ab,
 				ath12k_get_bw_reg_flags(max_bw_6ghz);
 			if (reg_rule->psd_flag)
 				flags |= NL80211_RRF_PSD;
-			ath12k_reg_update_freq_range(&ab->reg_freq_6ghz, reg_rule);
+			ath12k_reg_apply_freq_range(&ab->reg_freq_6ghz, reg_rule);
 		} else {
 			break;
 		}
