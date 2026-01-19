@@ -108,7 +108,6 @@ struct ieee80211_regdomain *ath12k_reg_build_regd(struct ath12k_base *ab,
 						  enum wmi_vdev_type vdev_type,
 						  enum ieee80211_ap_reg_power power_type);
 int ath12k_regd_update(struct ath12k *ar, bool init);
-void ath12k_reg_update_freq_range(struct ath12k *ar);
 int ath12k_reg_update_chan_list(struct ath12k *ar, bool wait);
 
 void ath12k_reg_reset_reg_info(struct ath12k_reg_info *reg_info);
