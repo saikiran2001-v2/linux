@@ -63,6 +63,12 @@ ath12k_reg_notifier(struct wiphy *wiphy, struct regulatory_request *request)
 		if (ah->state != ATH12K_HW_STATE_ON)
 			return;
 
+		/* Update freq_range before updating channel list
+		 * to ensure channels are filtered correctly
+		 */
+		for_each_ar(ah, ar, i)
+			ath12k_reg_update_freq_range(ar);
+
 		for_each_ar(ah, ar, i) {
 			ret = ath12k_reg_update_chan_list(ar, true);
 			if (ret && ret != -EINVAL) {
@@ -266,35 +272,20 @@ static void ath12k_copy_regd(struct ieee80211_regdomain *regd_orig,
 		       sizeof(struct ieee80211_reg_rule));
 }
 
-int ath12k_regd_update(struct ath12k *ar, bool init)
+/* Update ar->freq_range based on current regulatory domain and hardware caps.
+ * This must be called before ath12k_reg_update_chan_list() to ensure
+ * correct channel filtering.
+ */
+void ath12k_reg_update_freq_range(struct ath12k *ar)
 {
+	struct ath12k_base *ab = ar->ab;
 	struct ath12k_wmi_hal_reg_capabilities_ext_arg *reg_cap;
 	u32 phy_id, freq_low, freq_high, supported_bands;
-	struct ath12k_hw *ah = ath12k_ar_to_ah(ar);
-	struct ieee80211_hw *hw = ah->hw;
-	struct ieee80211_regdomain *regd, *regd_copy = NULL;
-	int ret, regd_len, pdev_id;
-	struct ath12k_base *ab;
-	long time_left;
-
-	ab = ar->ab;
-
-	time_left = wait_for_completion_timeout(&ar->regd_update_completed,
-						ATH12K_REG_UPDATE_TIMEOUT_HZ);
-	if (time_left == 0) {
-		ath12k_warn(ab, "Timeout while waiting for regulatory update");
-		/* Even though timeout has occurred, still continue since at least boot
-		 * time data would be there to process
-		 */
-	}
 
 	supported_bands = ar->pdev->cap.supported_bands;
 	reg_cap = &ab->hal_reg_cap[ar->pdev_idx];
 
-	/* Possible that due to reg change, current limits for supported
-	 * frequency changed. Update it. As a first step, reset the
-	 * previous values and then compute and set the new values.
-	 */
+	/* Reset previous values before computing new ones */
 	ar->freq_range.start_freq = 0;
 	ar->freq_range.end_freq = 0;
 
@@ -328,6 +319,30 @@ int ath12k_regd_update(struct ath12k *ar, bool init)
 
 		ath12k_mac_update_freq_range(ar, freq_low, freq_high);
 	}
+}
+
+int ath12k_regd_update(struct ath12k *ar, bool init)
+{
+	struct ath12k_hw *ah = ath12k_ar_to_ah(ar);
+	struct ieee80211_hw *hw = ah->hw;
+	struct ieee80211_regdomain *regd, *regd_copy = NULL;
+	int ret, regd_len, pdev_id;
+	struct ath12k_base *ab;
+	long time_left;
+
+	ab = ar->ab;
+
+	time_left = wait_for_completion_timeout(&ar->regd_update_completed,
+						ATH12K_REG_UPDATE_TIMEOUT_HZ);
+	if (time_left == 0) {
+		ath12k_warn(ab, "Timeout while waiting for regulatory update");
+		/* Even though timeout has occurred, still continue since at least boot
+		 * time data would be there to process
+		 */
+	}
+
+	/* Update frequency range based on current regulatory domain */
+	ath12k_reg_update_freq_range(ar);
 
 	/* If one of the radios within ah has already updated the regd for
 	 * the wiphy, then avoid setting regd again
