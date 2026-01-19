@@ -3,7 +3,7 @@ VERSION = 6
 PATCHLEVEL = 19
 SUBLEVEL = 0
 EXTRAVERSION = -rc5
-NAME = Baby Opossum Posse
+NAME = Silvercore
 
 # *DOCUMENTATION*
 # To see a list of typical targets execute "make help"
