@@ -1,3 +1,9 @@
+linux-qcom-x1e (6.19.0-rc5-1.14) oracular; urgency=medium
+
+  * Automated build after upstream merge
+
+ -- Saikiran <bjsaikiran@gmail.com>  Tue, 20 Jan 2026 09:04:24 +0530
+
 linux-qcom-x1e (6.19.0-rc5-1.13) oracular; urgency=medium
 
   * Automated build after upstream merge
