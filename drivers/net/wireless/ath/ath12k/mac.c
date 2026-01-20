@@ -14578,8 +14578,7 @@ static void ath12k_mac_setup(struct ath12k *ar)
 
 	INIT_DELAYED_WORK(&ar->scan.timeout, ath12k_scan_timeout_work);
 	wiphy_work_init(&ar->scan.vdev_clean_wk, ath12k_scan_vdev_clean_work);
-	/* INIT_WORK(&ar->regd_channel_update_work, ath12k_regd_update_chan_list_work); */
-	/* Commented out - function not implemented in 6.19 */
+	INIT_WORK(&ar->regd_channel_update_work, ath12k_regd_update_chan_list_work);
 	INIT_LIST_HEAD(&ar->regd_channel_update_queue);
 	INIT_WORK(&ar->regd_update_work, ath12k_regd_update_work);
 
