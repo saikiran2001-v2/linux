@@ -82,12 +82,9 @@ modules.order
 #
 /rpmbuild/
 
-#
 # Debian directory (make deb-pkg)
 #
-# /debian/
-# NOTE: Ubuntu kernel repos need to track debian/ directory
-# Commented out to allow tracking Ubuntu packaging files
+#/debian/
 
 #
 # Snap directory (make snap-pkg)
