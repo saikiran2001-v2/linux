@@ -85,7 +85,9 @@ modules.order
 #
 # Debian directory (make deb-pkg)
 #
-/debian/
+# /debian/
+# NOTE: Ubuntu kernel repos need to track debian/ directory
+# Commented out to allow tracking Ubuntu packaging files
 
 #
 # Snap directory (make snap-pkg)
