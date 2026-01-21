@@ -3302,6 +3302,11 @@ static int qmp_combo_usb_init(struct phy *phy)
 		goto out_unlock;
 	}
 
+	/* Wait for PHY pipe clock to stabilize.
+     	* Critical for USB-C monitor detection on boot (fixes -ETIMEDOUT).
+     	*/
+    	usleep_range(2000, 2500);
+
 	qmp->usb_init_count++;
 
 out_unlock:
