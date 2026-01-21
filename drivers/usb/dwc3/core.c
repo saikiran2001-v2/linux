@@ -1372,6 +1372,15 @@ int dwc3_core_init(struct dwc3 *dwc)
 	if (ret)
 		goto err_exit_ulpi;
 
+	/*
+	 * Some platforms need a delay after PHY initialization to allow
+	 * the PHY pipe clock to stabilize before attempting soft reset.
+	 * Without this delay, the soft reset may timeout because the clocks
+	 * are not yet synchronized. This is particularly important for
+	 * USB-C monitors/displays connected during cold boot.
+	 */
+	usleep_range(1000, 1200);
+
 	ret = dwc3_core_soft_reset(dwc);
 	if (ret)
 		goto err_exit_phy;
