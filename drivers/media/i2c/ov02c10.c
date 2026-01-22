@@ -637,6 +637,12 @@ static int ov02c10_disable_streams(struct v4l2_subdev *sd,
 
 	pm_runtime_put(ov02c10->dev);
 
+	/*
+	 * Return 0 even if cci_write failed. The stream is being stopped,
+	 * so we must release the PM runtime reference regardless of hardware
+	 * state. Returning an error here would cause pipeline lock leaks in
+	 * the camss driver.
+	 */
 	return 0;
 }
 
