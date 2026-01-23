@@ -389,6 +389,9 @@ struct ov02c10 {
 	/* MIPI lane info */
 	u32 link_freq_index;
 	u8 mipi_lanes;
+
+	/* Power cycling rate limit */
+	ktime_t last_power_off;
 };
 
 static inline struct ov02c10 *to_ov02c10(struct v4l2_subdev *subdev)
@@ -616,6 +619,13 @@ static int ov02c10_enable_streams(struct v4l2_subdev *sd,
 	if (ret)
 		goto out;
 
+	/*
+	 * Delay before streaming:
+	 * Give the sensor time to process all the register writes and internal
+	 * calibration before we assert the STREAM_ON bit.
+	 */
+	usleep_range(2000, 2500);
+
 	ret = cci_write(ov02c10->regmap, OV02C10_REG_STREAM_CONTROL, 1, NULL);
 out:
 	if (ret)
@@ -670,12 +680,25 @@ static int ov02c10_power_off(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 
+	/* 1. Assert Reset */
 	gpiod_set_value_cansleep(ov02c10->reset, 1);
 
+	/* 2. Disable Clock (Stop sensor state machine) */
+	clk_disable_unprepare(ov02c10->img_clk);
+	usleep_range(1000, 1500);
+
+	/* 3. Disable Power */
 	regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
 			       ov02c10->supplies);
 
-	clk_disable_unprepare(ov02c10->img_clk);
+	/*
+	 * 4. Discharge Wait
+	 * Wait for regulators to fully discharge before returning.
+	 * This delay ensures clean power cycling.
+	 */
+	usleep_range(50000, 55000);
+
+	ov02c10->last_power_off = ktime_get();
 
 	return 0;
 }
@@ -685,26 +708,48 @@ static int ov02c10_power_on(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 	int ret;
+	s64 delta_us;
 
-	ret = clk_prepare_enable(ov02c10->img_clk);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable imaging clock: %d", ret);
-		return ret;
+	/*
+	 * Mandatory Cool-Down:
+	 * If the camera was powered off within the last 3 seconds, ensure at least
+	 * 2 seconds have elapsed to allow full regulator discharge and sensor reset.
+	 * This prevents brownouts during rapid open/close/open sequences.
+	 */
+	delta_us = ktime_us_delta(ktime_get(), ov02c10->last_power_off);
+	if (delta_us < 3000000) {
+		dev_dbg(dev, "Enforcing %lld us cool-down period\n", 2000000 - delta_us);
+		fsleep(2000000 - delta_us);
 	}
+
+	/*
+	 * Standard Power-Up Sequence:
+	 * 1. Enable Regulators
+	 * 2. Enable Clock
+	 * 3. Release Reset (with ample boot time)
+	 */
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
 				    ov02c10->supplies);
 	if (ret < 0) {
 		dev_err(dev, "failed to enable regulators: %d", ret);
-		clk_disable_unprepare(ov02c10->img_clk);
 		return ret;
 	}
 
+	ret = clk_prepare_enable(ov02c10->img_clk);
+	if (ret < 0) {
+		dev_err(dev, "failed to enable imaging clock: %d", ret);
+		regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
+				       ov02c10->supplies);
+		return ret;
+	}
+
+	/* Wait for power/clock to stabilize */
+	usleep_range(5000, 5500);
+
 	if (ov02c10->reset) {
-		/* Assert reset for at least 2ms on back to back off-on */
-		usleep_range(5000, 5500);
 		gpiod_set_value_cansleep(ov02c10->reset, 0);
-		usleep_range(20000, 21000);
+		usleep_range(80000, 85000);
 	}
 
 	return 0;
