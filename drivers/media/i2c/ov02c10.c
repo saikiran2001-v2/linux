@@ -22,6 +22,8 @@
 #define OV02C10_CHIP_ID			0x5602
 
 #define OV02C10_REG_STREAM_CONTROL	CCI_REG8(0x0100)
+#define OV02C10_REG_SOFTWARE_RESET	CCI_REG8(0x0103)
+#define OV02C10_SOFTWARE_RESET_TRIGGER	0x01
 
 #define OV02C10_REG_HTS			CCI_REG16(0x380c)
 
@@ -616,10 +618,17 @@ static int ov02c10_enable_streams(struct v4l2_subdev *sd,
 	if (ret)
 		goto out;
 
+	/*
+	 * Delay before streaming:
+	 * Give the sensor time to process all the register writes and internal
+	 * calibration before we assert the STREAM_ON bit.
+	 */
+	usleep_range(2000, 2500);
+
 	ret = cci_write(ov02c10->regmap, OV02C10_REG_STREAM_CONTROL, 1, NULL);
 out:
 	if (ret)
-		pm_runtime_put(ov02c10->dev);
+		pm_runtime_put_autosuspend(ov02c10->dev);
 
 	return ret;
 }
@@ -631,7 +640,7 @@ static int ov02c10_disable_streams(struct v4l2_subdev *sd,
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 
 	cci_write(ov02c10->regmap, OV02C10_REG_STREAM_CONTROL, 0, NULL);
-	pm_runtime_put(ov02c10->dev);
+	pm_runtime_put_autosuspend(ov02c10->dev);
 
 	return 0;
 }
@@ -660,12 +669,12 @@ static int ov02c10_power_off(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 
-	gpiod_set_value_cansleep(ov02c10->reset, 1);
-
-	regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
-			       ov02c10->supplies);
+	if (ov02c10->reset)
+		gpiod_set_value_cansleep(ov02c10->reset, 1);
 
 	clk_disable_unprepare(ov02c10->img_clk);
+	regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
+			       ov02c10->supplies);
 
 	return 0;
 }
@@ -676,26 +685,59 @@ static int ov02c10_power_on(struct device *dev)
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 	int ret;
 
-	ret = clk_prepare_enable(ov02c10->img_clk);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable imaging clock: %d", ret);
-		return ret;
+	/*
+	 * On first power-on, do full initialization.
+	 * On subsequent power-ons, regulators/clock are already on,
+	 * so we just need to release reset and do software reset.
+	 */
+	/*
+	 * On first power-on, do full initialization.
+	 * On subsequent power-ons, regulators/clock are already on,
+	 * so we just need to release reset and do software reset.
+	 */
+	if (ov02c10->reset) {
+		gpiod_set_value_cansleep(ov02c10->reset, 1);
+		usleep_range(5000, 5500);
 	}
 
 	ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
 				    ov02c10->supplies);
 	if (ret < 0) {
 		dev_err(dev, "failed to enable regulators: %d", ret);
-		clk_disable_unprepare(ov02c10->img_clk);
 		return ret;
 	}
 
-	if (ov02c10->reset) {
-		/* Assert reset for at least 2ms on back to back off-on */
-		usleep_range(5000, 5500);
-		gpiod_set_value_cansleep(ov02c10->reset, 0);
-		usleep_range(20000, 21000);
+	ret = clk_prepare_enable(ov02c10->img_clk);
+	if (ret < 0) {
+		dev_err(dev, "failed to enable imaging clock: %d", ret);
+		regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
+				       ov02c10->supplies);
+		return ret;
 	}
+
+	/* Let the clock stabilise */
+	usleep_range(2000, 2200);
+
+	/* Release hardware reset */
+	if (ov02c10->reset) {
+		gpiod_set_value_cansleep(ov02c10->reset, 0);
+		/*
+		 * Wait for sensor microcontroller to stabilize after reset release.
+		 * 20ms prevents black frames during rapid power cycling.
+		 */
+		usleep_range(20000, 22000);
+	}
+
+	/* Perform software reset to ensure clean state */
+	ret = cci_write(ov02c10->regmap, OV02C10_REG_SOFTWARE_RESET,
+			OV02C10_SOFTWARE_RESET_TRIGGER, NULL);
+	if (ret) {
+		dev_err(dev, "failed to send software reset: %d", ret);
+		return ret;
+	}
+
+	/* Wait for software reset to complete */
+	usleep_range(5000, 5500);
 
 	return 0;
 }
@@ -865,10 +907,12 @@ static void ov02c10_remove(struct i2c_client *client)
 
 	v4l2_async_unregister_subdev(sd);
 	pm_runtime_disable(ov02c10->dev);
+	pm_runtime_dont_use_autosuspend(ov02c10->dev);
 	if (!pm_runtime_status_suspended(ov02c10->dev)) {
 		ov02c10_power_off(ov02c10->dev);
 		pm_runtime_set_suspended(ov02c10->dev);
 	}
+
 	v4l2_subdev_cleanup(sd);
 	media_entity_cleanup(&sd->entity);
 	v4l2_ctrl_handler_free(sd->ctrl_handler);
@@ -948,6 +992,8 @@ static int ov02c10_probe(struct i2c_client *client)
 		goto probe_error_media_entity_cleanup;
 	}
 
+	pm_runtime_set_autosuspend_delay(ov02c10->dev, 1000);
+	pm_runtime_use_autosuspend(ov02c10->dev);
 	pm_runtime_set_active(ov02c10->dev);
 	pm_runtime_enable(ov02c10->dev);
 
