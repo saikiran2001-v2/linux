@@ -205,7 +205,8 @@ static int x1e80100_platform_probe(struct platform_device *pdev)
 	
 	/* Load topology file if specified in config */
 	if (data->cfg->topology_shortname)
-		card->topology_shortname = data->cfg->topology_shortname;
+		strscpy(card->topology_shortname, data->cfg->topology_shortname,
+			sizeof(card->topology_shortname));
 	
 	x1e80100_add_be_ops(card);
 
@@ -235,7 +236,7 @@ static const struct x1e80100_snd_cfg dell_xps13_9345_cfg = {
 
 static const struct x1e80100_snd_cfg lenovo_yoga_slim7x_cfg = {
 	.driver_name = "x1e80100",
-	.topology_shortname = "X1E80100-LENOVO-Yoga-Slim7x-tplg.bin",
+	.topology_shortname = "LenovoSlim7x",
 };
 
 static const struct of_device_id snd_x1e80100_dt_match[] = {
