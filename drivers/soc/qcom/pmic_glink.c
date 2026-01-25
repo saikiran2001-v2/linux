@@ -14,6 +14,7 @@
 #include <linux/soc/qcom/pdr.h>
 #include <linux/soc/qcom/pmic_glink.h>
 #include <linux/spinlock.h>
+#include <linux/pm.h>
 
 #define PMIC_GLINK_SEND_TIMEOUT (5 * HZ)
 
@@ -39,6 +40,7 @@ struct pmic_glink {
 	struct mutex state_lock;
 	unsigned int client_state;
 	unsigned int pdr_state;
+	bool suspended;
 	bool pdr_available;
 
 	/* serializing clients list updates */
@@ -150,6 +152,16 @@ static int pmic_glink_rpmsg_callback(struct rpmsg_device *rpdev, void *data,
 	struct pmic_glink_hdr *hdr;
 	struct pmic_glink *pg = dev_get_drvdata(&rpdev->dev);
 	unsigned long flags;
+
+	/*
+	 * NUCLEAR FIX: Ignore all messages during suspend.
+	 * This prevents BattMgr, UCSI, and AltMode from processing
+	 * spurious updates from the RPM/PMIC that would wake the system.
+	 */
+	if (pg->suspended) {
+		dev_dbg(pg->dev, "Dropping message during suspend\n");
+		return 0;
+	}
 
 	if (len < sizeof(*hdr)) {
 		dev_warn(pg->dev, "ignoring truncated message\n");
@@ -405,12 +417,40 @@ static const struct of_device_id pmic_glink_of_match[] = {
 };
 MODULE_DEVICE_TABLE(of, pmic_glink_of_match);
 
+static int pmic_glink_suspend(struct device *dev)
+{
+	struct pmic_glink *pg = dev_get_drvdata(dev);
+
+	mutex_lock(&pg->state_lock);
+	pg->suspended = true;
+	mutex_unlock(&pg->state_lock);
+
+	return 0;
+}
+
+static int pmic_glink_resume(struct device *dev)
+{
+	struct pmic_glink *pg = dev_get_drvdata(dev);
+
+	mutex_lock(&pg->state_lock);
+	pg->suspended = false;
+	mutex_unlock(&pg->state_lock);
+
+	return 0;
+}
+
+static const struct dev_pm_ops pmic_glink_pm_ops = {
+	.suspend = pmic_glink_suspend,
+	.resume  = pmic_glink_resume,
+};
+
 static struct platform_driver pmic_glink_driver = {
 	.probe = pmic_glink_probe,
 	.remove = pmic_glink_remove,
 	.driver = {
 		.name = "qcom_pmic_glink",
 		.of_match_table = pmic_glink_of_match,
+		.pm = &pmic_glink_pm_ops,
 	},
 };
 module_platform_driver(pmic_glink_driver);
