@@ -59,6 +59,15 @@
 #define OV02C10_REG_TEST_PATTERN		CCI_REG8(0x4503)
 #define OV02C10_TEST_PATTERN_ENABLE		BIT(7)
 
+/*
+ * Power Cycling Delay (microseconds)
+ * Minimum time between power-off and power-on to ensure complete voltage
+ * discharge and sensor microcontroller reset. This prevents brownout conditions
+ * during rapid camera open/close cycles (e.g., browser WebRTC permission checks).
+ * Empirically determined: 2.3s provides 80%+ reliability without active discharge.
+ */
+#define OV02C10_POWER_CYCLE_DELAY_US		2300000
+
 struct ov02c10_mode {
 	/* Frame width in pixels */
 	u32 width;
@@ -712,14 +721,16 @@ static int ov02c10_power_on(struct device *dev)
 
 	/*
 	 * Mandatory Cool-Down:
-	 * With active-discharge active on the regulators, the voltage rails drop
-	 * quickly. We only need a short window to ensure the sensor sees 0V
-	 * long enough to reset its internal POR logic. 20ms is sufficient.
+	 * Enforce minimum delay between power-off and power-on to prevent
+	 * brownout conditions. Without hardware active-discharge support in
+	 * the RPMh regulator driver, we rely on passive discharge which
+	 * requires a longer delay.
 	 */
 	delta_us = ktime_us_delta(ktime_get(), ov02c10->last_power_off);
-	if (delta_us < 20000) {
-		dev_dbg(dev, "Enforcing %lld us cool-down period\n", 20000 - delta_us);
-		fsleep(20000 - delta_us);
+	if (delta_us < OV02C10_POWER_CYCLE_DELAY_US) {
+		s64 sleep_us = OV02C10_POWER_CYCLE_DELAY_US - delta_us;
+		dev_dbg(dev, "Enforcing %lld us cool-down period\n", sleep_us);
+		fsleep(sleep_us);
 	}
 
 	/*
