@@ -984,7 +984,11 @@ static int i2c_hid_core_suspend(struct i2c_hid *ihid, bool force_poweroff)
 	if (!(ihid->quirks & I2C_HID_QUIRK_NO_SLEEP_ON_SUSPEND))
 		i2c_hid_set_power(ihid, I2C_HID_PWR_SLEEP);
 
-	disable_irq(client->irq);
+	/*
+	 * Don't disable IRQ here anymore - we do it in suspend_noirq
+	 * to prevent spurious IRQs during the noirq phase. This ensures
+	 * the IRQ is disabled after the device is fully suspended.
+	 */
 
 	if (force_poweroff || !device_may_wakeup(&client->dev))
 		i2c_hid_core_power_down(ihid);
@@ -1001,7 +1005,11 @@ static int i2c_hid_core_resume(struct i2c_hid *ihid)
 	if (!device_may_wakeup(&client->dev))
 		i2c_hid_core_power_up(ihid);
 
-	enable_irq(client->irq);
+	/*
+	 * Don't enable IRQ here anymore - we do it in resume_noirq
+	 * to match the disable in suspend_noirq. This ensures proper
+	 * symmetry in IRQ management.
+	 */
 
 	/* On Goodix 27c6:0d42 wait extra time before device wakeup.
 	 * It's not clear why but if we send wakeup too early, the device will
@@ -1392,6 +1400,50 @@ static int i2c_hid_core_pm_restore(struct device *dev)
 	return i2c_hid_core_resume(ihid);
 }
 
+static int i2c_hid_core_pm_suspend_noirq(struct device *dev)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	struct i2c_hid *ihid = i2c_get_clientdata(client);
+
+	/*
+	 * Panel followers have their own power management tied to the
+	 * display panel, so don't interfere with their IRQ management.
+	 */
+	/*
+	 * NUCLEAR: Removed is_panel_follower check.
+	 * On X1E80100, even panel followers cause IRQ storms.
+	 *
+	 * Disable IRQ during noirq phase to prevent spurious interrupts
+	 * from I2C bus glitches during suspend. This must be done in the
+	 * noirq phase (after device suspend) to prevent IRQs from firing
+	 * when the device is in an inconsistent state.
+	 *
+	 * For wakeup-enabled devices, the IRQ should remain enabled to
+	 * wake the system. However, most touchpads are not wakeup sources.
+	 */
+	/* NUCLEAR: Removed device_may_wakeup check - disable ALL IRQs */
+	disable_irq(client->irq);
+
+	return 0;
+}
+
+static int i2c_hid_core_pm_resume_noirq(struct device *dev)
+{
+	struct i2c_client *client = to_i2c_client(dev);
+	struct i2c_hid *ihid = i2c_get_clientdata(client);
+
+	/*
+	 * NUCLEAR: Removed is_panel_follower check.
+	 *
+	 * Re-enable IRQ in the noirq phase to match suspend_noirq.
+	 * This ensures the IRQ is ready before the device resumes.
+	 */
+	/* NUCLEAR: Removed device_may_wakeup check - enable ALL IRQs */
+	enable_irq(client->irq);
+
+	return 0;
+}
+
 const struct dev_pm_ops i2c_hid_core_pm = {
 	.suspend = pm_sleep_ptr(i2c_hid_core_pm_suspend),
 	.resume = pm_sleep_ptr(i2c_hid_core_pm_resume),
@@ -1399,6 +1451,8 @@ const struct dev_pm_ops i2c_hid_core_pm = {
 	.thaw = pm_sleep_ptr(i2c_hid_core_pm_resume),
 	.poweroff = pm_sleep_ptr(i2c_hid_core_pm_suspend),
 	.restore = pm_sleep_ptr(i2c_hid_core_pm_restore),
+	.suspend_noirq = pm_sleep_ptr(i2c_hid_core_pm_suspend_noirq),
+	.resume_noirq = pm_sleep_ptr(i2c_hid_core_pm_resume_noirq),
 };
 EXPORT_SYMBOL_GPL(i2c_hid_core_pm);
 
