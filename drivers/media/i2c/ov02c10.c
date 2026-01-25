@@ -22,6 +22,8 @@
 #define OV02C10_CHIP_ID			0x5602
 
 #define OV02C10_REG_STREAM_CONTROL	CCI_REG8(0x0100)
+#define OV02C10_REG_SOFTWARE_RESET	CCI_REG8(0x0103)
+#define OV02C10_SOFTWARE_RESET_TRIGGER	0x01
 
 #define OV02C10_REG_HTS			CCI_REG16(0x380c)
 
@@ -390,8 +392,8 @@ struct ov02c10 {
 	u32 link_freq_index;
 	u8 mipi_lanes;
 
-	/* Power cycling rate limit */
-	ktime_t last_power_off;
+	/* Power management: track if regulators are enabled */
+	bool powered;
 };
 
 static inline struct ov02c10 *to_ov02c10(struct v4l2_subdev *subdev)
@@ -680,25 +682,16 @@ static int ov02c10_power_off(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 
-	/* 1. Assert Reset */
-	gpiod_set_value_cansleep(ov02c10->reset, 1);
-
-	/* 2. Disable Clock (Stop sensor state machine) */
-	clk_disable_unprepare(ov02c10->img_clk);
-	usleep_range(1000, 1500);
-
-	/* 3. Disable Power */
-	regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
-			       ov02c10->supplies);
-
 	/*
-	 * 4. Discharge Wait
-	 * Wait for regulators to fully discharge before returning.
-	 * This delay ensures clean power cycling.
+	 * Keep regulators and clock ON to avoid discharge delay.
+	 * Just assert hardware reset to put sensor in reset state.
+	 * This allows instant power-on without waiting for regulator discharge.
 	 */
-	usleep_range(50000, 55000);
+	if (ov02c10->reset)
+		gpiod_set_value_cansleep(ov02c10->reset, 1);
 
-	ov02c10->last_power_off = ktime_get();
+	/* Keep clock running - sensor needs it for software reset */
+	/* Keep regulators enabled - avoids 2.3s discharge delay */
 
 	return 0;
 }
@@ -708,49 +701,62 @@ static int ov02c10_power_on(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 	int ret;
-	s64 delta_us;
 
 	/*
-	 * Mandatory Cool-Down:
-	 * If the camera was powered off within the last 3 seconds, ensure at least
-	 * 2 seconds have elapsed to allow full regulator discharge and sensor reset.
-	 * This prevents brownouts during rapid open/close/open sequences.
+	 * On first power-on, do full initialization.
+	 * On subsequent power-ons, regulators/clock are already on,
+	 * so we just need to release reset and do software reset.
 	 */
-	delta_us = ktime_us_delta(ktime_get(), ov02c10->last_power_off);
-	if (delta_us < 3000000) {
-		dev_dbg(dev, "Enforcing %lld us cool-down period\n", 2000000 - delta_us);
-		fsleep(2000000 - delta_us);
+	if (!ov02c10->powered) {
+		/* First time: enable everything */
+		if (ov02c10->reset) {
+			gpiod_set_value_cansleep(ov02c10->reset, 1);
+			usleep_range(2000, 2200);
+		}
+
+		ret = clk_prepare_enable(ov02c10->img_clk);
+		if (ret < 0) {
+			dev_err(dev, "failed to enable imaging clock: %d", ret);
+			return ret;
+		}
+
+		usleep_range(2000, 2200);
+
+		ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
+					    ov02c10->supplies);
+		if (ret < 0) {
+			dev_err(dev, "failed to enable regulators: %d", ret);
+			clk_disable_unprepare(ov02c10->img_clk);
+			return ret;
+		}
+
+		ov02c10->powered = true;
 	}
 
-	/*
-	 * Standard Power-Up Sequence:
-	 * 1. Enable Regulators
-	 * 2. Enable Clock
-	 * 3. Release Reset (with ample boot time)
-	 */
-
-	ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
-				    ov02c10->supplies);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable regulators: %d", ret);
-		return ret;
-	}
-
-	ret = clk_prepare_enable(ov02c10->img_clk);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable imaging clock: %d", ret);
-		regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
-				       ov02c10->supplies);
-		return ret;
-	}
-
-	/* Wait for power/clock to stabilize */
-	usleep_range(5000, 5500);
-
+	/* Release hardware reset */
 	if (ov02c10->reset) {
+		/* Ensure reset was asserted for at least 2ms */
+		usleep_range(2000, 2200);
 		gpiod_set_value_cansleep(ov02c10->reset, 0);
-		usleep_range(80000, 85000);
+		/*
+		 * Wait for sensor microcontroller to stabilize after reset release.
+		 * 50ms prevents black frames during rapid power cycling by ensuring
+		 * the sensor's internal state machine is fully initialized before
+		 * software reset and register configuration.
+		 */
+		msleep(50);
 	}
+
+	/* Perform software reset to ensure clean state */
+	ret = cci_write(ov02c10->regmap, OV02C10_REG_SOFTWARE_RESET,
+			OV02C10_SOFTWARE_RESET_TRIGGER, NULL);
+	if (ret) {
+		dev_err(dev, "failed to send software reset: %d", ret);
+		return ret;
+	}
+
+	/* Wait for software reset to complete */
+	usleep_range(5000, 5500);
 
 	return 0;
 }
@@ -924,6 +930,19 @@ static void ov02c10_remove(struct i2c_client *client)
 		ov02c10_power_off(ov02c10->dev);
 		pm_runtime_set_suspended(ov02c10->dev);
 	}
+
+	/* Clean up regulators/clock if still enabled */
+	if (ov02c10->powered) {
+		/* Assert reset before disabling power for clean shutdown */
+		if (ov02c10->reset)
+			gpiod_set_value_cansleep(ov02c10->reset, 1);
+
+		clk_disable_unprepare(ov02c10->img_clk);
+		regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
+				       ov02c10->supplies);
+		ov02c10->powered = false;
+	}
+
 	v4l2_subdev_cleanup(sd);
 	media_entity_cleanup(&sd->entity);
 	v4l2_ctrl_handler_free(sd->ctrl_handler);
