@@ -22,6 +22,8 @@
 #define OV02C10_CHIP_ID			0x5602
 
 #define OV02C10_REG_STREAM_CONTROL	CCI_REG8(0x0100)
+#define OV02C10_REG_SOFTWARE_RESET	CCI_REG8(0x0103)
+#define OV02C10_SOFTWARE_RESET_TRIGGER	0x01
 
 #define OV02C10_REG_HTS			CCI_REG16(0x380c)
 
@@ -677,13 +679,16 @@ static int ov02c10_power_off(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 
-	gpiod_set_value_cansleep(ov02c10->reset, 1);
-	usleep_range(2000, 2200);
+	/*
+	 * Experimental: Keep regulators and clock ON to avoid discharge delay.
+	 * Just assert hardware reset to put sensor in reset state.
+	 * This allows instant power-on without waiting for regulator discharge.
+	 */
+	if (ov02c10->reset)
+		gpiod_set_value_cansleep(ov02c10->reset, 1);
 
-	clk_disable_unprepare(ov02c10->img_clk);
-
-	regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
-			       ov02c10->supplies);
+	/* Keep clock running - sensor needs it for software reset */
+	/* Keep regulators enabled - avoids 2.3s discharge delay */
 
 	return 0;
 }
@@ -693,43 +698,58 @@ static int ov02c10_power_on(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 	int ret;
+	static bool first_power_on = true;
 
-	if (ov02c10->reset) {
-		/* Ensure reset is asserted before trying to power_on */
-		gpiod_set_value_cansleep(ov02c10->reset, 1);
+	/*
+	 * On first power-on, do full initialization.
+	 * On subsequent power-ons, regulators/clock are already on,
+	 * so we just need to release reset and do software reset.
+	 */
+	if (first_power_on) {
+		/* First time: enable everything */
+		if (ov02c10->reset) {
+			gpiod_set_value_cansleep(ov02c10->reset, 1);
+			usleep_range(2000, 2200);
+		}
+
+		ret = clk_prepare_enable(ov02c10->img_clk);
+		if (ret < 0) {
+			dev_err(dev, "failed to enable imaging clock: %d", ret);
+			return ret;
+		}
+
 		usleep_range(2000, 2200);
+
+		ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
+					    ov02c10->supplies);
+		if (ret < 0) {
+			dev_err(dev, "failed to enable regulators: %d", ret);
+			clk_disable_unprepare(ov02c10->img_clk);
+			return ret;
+		}
+
+		first_power_on = false;
 	}
 
-	ret = clk_prepare_enable(ov02c10->img_clk);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable imaging clock: %d", ret);
-		return ret;
-	}
-
-	/* Let the clock stabilise */
-	usleep_range(2000, 2200);
-
-	ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
-				    ov02c10->supplies);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable regulators: %d", ret);
-		clk_disable_unprepare(ov02c10->img_clk);
-		return ret;
-	}
-
+	/* Release hardware reset */
 	if (ov02c10->reset) {
-		/* Assert reset for at least 2ms on back to back off-on */
+		/* Ensure reset was asserted for at least 2ms */
 		usleep_range(2000, 2200);
 		gpiod_set_value_cansleep(ov02c10->reset, 0);
-		/*
-		 * T2: Sensor boot time before first CCI access.
-		 * Datasheet specifies minimum 8192 XVCLK cycles (1.37ms @ 6MHz),
-		 * but empirically the sensor's microcontroller requires
-		 * significantly more time to complete internal initialization.
-		 * Testing shows 100ms is required for reliable operation.
-		 */
-		usleep_range(100000, 101000);
+		/* Wait for sensor boot */
+		usleep_range(10000, 11000);
 	}
+
+	/* Perform software reset to ensure clean state */
+	ret = cci_write(ov02c10->regmap, OV02C10_REG_SOFTWARE_RESET,
+			OV02C10_SOFTWARE_RESET_TRIGGER, NULL);
+	if (ret) {
+		dev_err(dev, "failed to send software reset: %d", ret);
+		return ret;
+	}
+
+	/* Wait for software reset to complete */
+	usleep_range(5000, 5500);
 
 	return 0;
 }
