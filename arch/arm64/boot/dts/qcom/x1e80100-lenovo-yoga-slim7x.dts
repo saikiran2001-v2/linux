@@ -188,7 +188,7 @@
 	};
 
 	sound {
-		compatible = "qcom,x1e80100-sndcard";
+		compatible = "lenovo,yoga-slim7x-sndcard";
 		model = "X1E80100-LENOVO-Yoga-Slim7x";
 		audio-routing = "WooferLeft IN", "WSA WSA_SPK1 OUT",
 				"TweeterLeft IN", "WSA WSA_SPK2 OUT",

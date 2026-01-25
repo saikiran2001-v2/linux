@@ -227,9 +227,14 @@ static const struct x1e80100_snd_cfg dell_xps13_9345_cfg = {
 	.channels_num = ARRAY_SIZE(right_left_4_channels_map),
 };
 
+static const struct x1e80100_snd_cfg lenovo_yoga_slim7x_cfg = {
+	.driver_name = "x1e80100",
+};
+
 static const struct of_device_id snd_x1e80100_dt_match[] = {
 	{ .compatible = "qcom,x1e80100-sndcard", .data = &x1e80100_cfg, },
 	{ .compatible = "dell,xps13-9345-sndcard", .data = &dell_xps13_9345_cfg, },
+	{ .compatible = "lenovo,yoga-slim7x-sndcard", .data = &lenovo_yoga_slim7x_cfg, },
 	{ .compatible = "qcom,glymur-sndcard", .data = &glymur_cfg, },
 	{}
 };
