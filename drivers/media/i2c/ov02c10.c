@@ -721,8 +721,14 @@ static int ov02c10_power_on(struct device *dev)
 		/* Assert reset for at least 2ms on back to back off-on */
 		usleep_range(2000, 2200);
 		gpiod_set_value_cansleep(ov02c10->reset, 0);
-		/* This is where we need to capture power_on() T2 */
-		usleep_range(5000, 5100);
+		/*
+		 * T2: Sensor boot time before first CCI access.
+		 * Datasheet specifies minimum 8192 XVCLK cycles (1.37ms @ 6MHz),
+		 * but empirically the sensor's microcontroller requires
+		 * significantly more time to complete internal initialization.
+		 * Testing shows 100ms is required for reliable operation.
+		 */
+		usleep_range(100000, 101000);
 	}
 
 	return 0;
