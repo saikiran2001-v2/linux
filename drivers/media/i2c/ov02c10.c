@@ -64,9 +64,11 @@
  * Minimum time between power-off and power-on to ensure complete voltage
  * discharge and sensor microcontroller reset. This prevents brownout conditions
  * during rapid camera open/close cycles (e.g., browser WebRTC permission checks).
- * Empirically determined: 2.3s provides 80%+ reliability without active discharge.
+ * 
+ * Testing with GPIO floating: 100ms should be sufficient if backfeeding is eliminated.
+ * If brownouts persist, the issue is elsewhere (capacitor size, regulator design, etc.)
  */
-#define OV02C10_POWER_CYCLE_DELAY_US		2300000
+#define OV02C10_POWER_CYCLE_DELAY_US		100000
 
 struct ov02c10_mode {
 	/* Frame width in pixels */
@@ -701,11 +703,13 @@ static int ov02c10_power_off(struct device *dev)
 			       ov02c10->supplies);
 
 	/*
-	 * 4. Discharge Wait
-	 * Wait for regulators to fully discharge before returning.
-	 * This delay ensures clean power cycling.
+	 * 4. Float Reset GPIO
+	 * Switch reset GPIO to input (high-impedance) to prevent current
+	 * backfeeding through the sensor's internal protection diodes.
+	 * This allows the regulators to discharge quickly without a current path.
 	 */
-	usleep_range(50000, 55000);
+	if (ov02c10->reset)
+		gpiod_direction_input(ov02c10->reset);
 
 	ov02c10->last_power_off = ktime_get();
 
@@ -759,7 +763,8 @@ static int ov02c10_power_on(struct device *dev)
 	usleep_range(5000, 5500);
 
 	if (ov02c10->reset) {
-		gpiod_set_value_cansleep(ov02c10->reset, 0);
+		/* Reconfigure as output and release reset */
+		gpiod_direction_output(ov02c10->reset, 0);
 		usleep_range(80000, 85000);
 	}
 
