@@ -77,6 +77,7 @@ struct pmic_glink_ucsi {
 	spinlock_t state_lock;
 	bool ucsi_registered;
 	bool pd_running;
+	bool suspended;
 
 	u8 read_buf[UCSI_BUF_V2_SIZE];
 };
@@ -333,6 +334,8 @@ static void pmic_glink_ucsi_callback(const void *data, size_t len, void *priv)
 {
 	struct pmic_glink_ucsi *ucsi = priv;
 	const struct pmic_glink_hdr *hdr = data;
+	unsigned long flags;
+	bool suspended;
 
 	switch (le32_to_cpu(hdr->opcode)) {
 	case UC_UCSI_READ_BUF_REQ:
@@ -342,7 +345,22 @@ static void pmic_glink_ucsi_callback(const void *data, size_t len, void *priv)
 		pmic_glink_ucsi_write_ack(ucsi, data, len);
 		break;
 	case UC_UCSI_USBC_NOTIFY_IND:
-		schedule_work(&ucsi->notify_work);
+		/*
+		 * During suspend, ignore UCSI notifications to prevent
+		 * spurious wakeups from battery status updates and other
+		 * non-critical events. Critical events (like new device
+		 * connections) are handled by firmware and will properly
+		 * wake the system if needed.
+		 */
+		spin_lock_irqsave(&ucsi->state_lock, flags);
+		suspended = ucsi->suspended;
+		spin_unlock_irqrestore(&ucsi->state_lock, flags);
+
+		if (!suspended) {
+			schedule_work(&ucsi->notify_work);
+		} else {
+			dev_dbg(ucsi->dev, "Ignoring UCSI notification during suspend\\n");
+		}
 		break;
 	}
 }
@@ -474,10 +492,56 @@ static const struct auxiliary_device_id pmic_glink_ucsi_id_table[] = {
 };
 MODULE_DEVICE_TABLE(auxiliary, pmic_glink_ucsi_id_table);
 
+static int pmic_glink_ucsi_suspend(struct device *dev)
+{
+	struct auxiliary_device *adev = to_auxiliary_dev(dev);
+	struct pmic_glink_ucsi *ucsi = dev_get_drvdata(&adev->dev);
+	unsigned long flags;
+
+	/*
+	 * Mark as suspended to prevent new notifications from being
+	 * processed. This prevents spurious wakeups from battery
+	 * status updates and other non-critical UCSI events.
+	 */
+	spin_lock_irqsave(&ucsi->state_lock, flags);
+	ucsi->suspended = true;
+	spin_unlock_irqrestore(&ucsi->state_lock, flags);
+
+	/*
+	 * Cancel any pending notification work. If work is currently
+	 * running, this will wait for it to complete.
+	 */
+	cancel_work_sync(&ucsi->notify_work);
+
+	return 0;
+}
+
+static int pmic_glink_ucsi_resume(struct device *dev)
+{
+	struct auxiliary_device *adev = to_auxiliary_dev(dev);
+	struct pmic_glink_ucsi *ucsi = dev_get_drvdata(&adev->dev);
+	unsigned long flags;
+
+	/*
+	 * Clear suspended flag to resume normal notification processing.
+	 */
+	spin_lock_irqsave(&ucsi->state_lock, flags);
+	ucsi->suspended = false;
+	spin_unlock_irqrestore(&ucsi->state_lock, flags);
+
+	return 0;
+}
+
+static DEFINE_SIMPLE_DEV_PM_OPS(pmic_glink_ucsi_pm_ops,
+				pmic_glink_ucsi_suspend, pmic_glink_ucsi_resume);
+
 static struct auxiliary_driver pmic_glink_ucsi_driver = {
 	.name = "pmic_glink_ucsi",
 	.probe = pmic_glink_ucsi_probe,
 	.remove = pmic_glink_ucsi_remove,
+	.driver = {
+		.pm = &pmic_glink_ucsi_pm_ops,
+	},
 	.id_table = pmic_glink_ucsi_id_table,
 };
 
