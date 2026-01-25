@@ -719,7 +719,7 @@ static int ov02c10_power_on(struct device *dev)
 	delta_us = ktime_us_delta(ktime_get(), ov02c10->last_power_off);
 	if (delta_us < 3000000) {
 		dev_dbg(dev, "Enforcing %lld us cool-down period\n", 2000000 - delta_us);
-		fsleep(2000000 - delta_us);
+		fsleep(2500000 - delta_us);
 	}
 
 	/*
