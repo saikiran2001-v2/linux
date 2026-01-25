@@ -65,10 +65,9 @@
  * discharge and sensor microcontroller reset. This prevents brownout conditions
  * during rapid camera open/close cycles (e.g., browser WebRTC permission checks).
  * 
- * Testing with GPIO floating: 100ms should be sufficient if backfeeding is eliminated.
- * If brownouts persist, the issue is elsewhere (capacitor size, regulator design, etc.)
+ * Empirically determined: 2.3s provides 80%+ reliability without active discharge.
  */
-#define OV02C10_POWER_CYCLE_DELAY_US		100000
+#define OV02C10_POWER_CYCLE_DELAY_US		2300000
 
 struct ov02c10_mode {
 	/* Frame width in pixels */
