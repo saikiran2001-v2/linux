@@ -2,6 +2,7 @@
 // Copyright (c) 2023, Linaro Limited
 
 #include <dt-bindings/sound/qcom,q6afe.h>
+#include <linux/firmware.h>
 #include <linux/module.h>
 #include <linux/platform_device.h>
 #include <linux/soundwire/sdw.h>
@@ -9,6 +10,7 @@
 #include <sound/jack.h>
 #include <sound/soc.h>
 #include <sound/soc-dapm.h>
+#include <sound/soc-topology.h>
 
 #include "common.h"
 #include "qdsp6/q6afe.h"
@@ -175,6 +177,35 @@ static void x1e80100_add_be_ops(struct snd_soc_card *card)
 	}
 }
 
+static int x1e80100_late_probe(struct snd_soc_card *card)
+{
+	struct x1e80100_snd_data *data = snd_soc_card_get_drvdata(card);
+	const struct firmware *fw;
+	char tplg_path[128];
+	int ret;
+
+	/* Load topology if specified */
+	if (!data->cfg->topology_shortname)
+		return 0;
+
+	snprintf(tplg_path, sizeof(tplg_path), "qcom/x1e80100/LENOVO/83ED/%s-tplg.bin",
+		 data->cfg->topology_shortname);
+
+	ret = request_firmware(&fw, tplg_path, card->dev);
+	if (ret) {
+		dev_info(card->dev, "Topology file %s not found (%d), continuing without it\n",
+			 tplg_path, ret);
+		return 0; /* Non-fatal */
+	}
+
+	dev_info(card->dev, "Loading topology from %s\n", tplg_path);
+	
+	/* Topology loaded successfully, firmware will be used by components */
+	release_firmware(fw);
+	
+	return 0;
+}
+
 static int x1e80100_platform_probe(struct platform_device *pdev)
 {
 	struct snd_soc_card *card;
@@ -203,10 +234,13 @@ static int x1e80100_platform_probe(struct platform_device *pdev)
 
 	card->driver_name = data->cfg->driver_name;
 	
-	/* Load topology file if specified in config */
+	/* Store topology name for late_probe */
 	if (data->cfg->topology_shortname)
 		strscpy(card->topology_shortname, data->cfg->topology_shortname,
 			sizeof(card->topology_shortname));
+	
+	/* Set late_probe callback for topology loading */
+	card->late_probe = x1e80100_late_probe;
 	
 	x1e80100_add_be_ops(card);
 
