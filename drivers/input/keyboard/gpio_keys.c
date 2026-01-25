@@ -1081,7 +1081,52 @@ static int gpio_keys_resume(struct device *dev)
 	return 0;
 }
 
-static DEFINE_SIMPLE_DEV_PM_OPS(gpio_keys_pm_ops, gpio_keys_suspend, gpio_keys_resume);
+static int gpio_keys_suspend_noirq(struct device *dev)
+{
+	struct gpio_keys_drvdata *ddata = dev_get_drvdata(dev);
+	struct gpio_button_data *bdata;
+	int i;
+
+	/*
+	 * NUCLEAR: Disable ALL IRQs during suspend_noirq, regardless of
+	 * wakeup status. This prevents IRQ storms during CPU offline.
+	 * On X1E80100, even wakeup-enabled IRQs (lid switch) cause
+	 * "set affinity failed" crashes during s2idle entry.
+	 */
+	for (i = 0; i < ddata->pdata->nbuttons; i++) {
+		bdata = &ddata->data[i];
+		if (bdata->irq)
+			disable_irq(bdata->irq);
+	}
+
+	return 0;
+}
+
+static int gpio_keys_resume_noirq(struct device *dev)
+{
+	struct gpio_keys_drvdata *ddata = dev_get_drvdata(dev);
+	struct gpio_button_data *bdata;
+	int i;
+
+	/*
+	 * Re-enable IRQs that were disabled in suspend_noirq.
+	 * This must happen before device resume to ensure the
+	 * IRQ is ready when the device powers back up.
+	 */
+	for (i = 0; i < ddata->pdata->nbuttons; i++) {
+		bdata = &ddata->data[i];
+		/* NUCLEAR: Removed wakeup check - enable ALL IRQs */
+		if (bdata->irq)
+			enable_irq(bdata->irq);
+	}
+
+	return 0;
+}
+
+static const struct dev_pm_ops gpio_keys_pm_ops = {
+	SYSTEM_SLEEP_PM_OPS(gpio_keys_suspend, gpio_keys_resume)
+	NOIRQ_SYSTEM_SLEEP_PM_OPS(gpio_keys_suspend_noirq, gpio_keys_resume_noirq)
+};
 
 static void gpio_keys_shutdown(struct platform_device *pdev)
 {
