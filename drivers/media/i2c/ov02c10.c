@@ -712,14 +712,14 @@ static int ov02c10_power_on(struct device *dev)
 
 	/*
 	 * Mandatory Cool-Down:
-	 * If the camera was powered off within the last 3 seconds, ensure at least
-	 * 2 seconds have elapsed to allow full regulator discharge and sensor reset.
-	 * This prevents brownouts during rapid open/close/open sequences.
+	 * With active-discharge active on the regulators, the voltage rails drop
+	 * quickly. We only need a short window to ensure the sensor sees 0V
+	 * long enough to reset its internal POR logic. 20ms is sufficient.
 	 */
 	delta_us = ktime_us_delta(ktime_get(), ov02c10->last_power_off);
-	if (delta_us < 3000000) {
-		dev_dbg(dev, "Enforcing %lld us cool-down period\n", 2000000 - delta_us);
-		fsleep(2500000 - delta_us);
+	if (delta_us < 20000) {
+		dev_dbg(dev, "Enforcing %lld us cool-down period\n", 20000 - delta_us);
+		fsleep(20000 - delta_us);
 	}
 
 	/*
