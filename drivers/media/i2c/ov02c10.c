@@ -59,16 +59,6 @@
 #define OV02C10_REG_TEST_PATTERN		CCI_REG8(0x4503)
 #define OV02C10_TEST_PATTERN_ENABLE		BIT(7)
 
-/*
- * Power Cycling Delay (microseconds)
- * Minimum time between power-off and power-on to ensure complete voltage
- * discharge and sensor microcontroller reset. This prevents brownout conditions
- * during rapid camera open/close cycles (e.g., browser WebRTC permission checks).
- * 
- * Empirically determined: 2.3s provides 80%+ reliability without active discharge.
- */
-#define OV02C10_POWER_CYCLE_DELAY_US		2300000
-
 struct ov02c10_mode {
 	/* Frame width in pixels */
 	u32 width;
@@ -399,9 +389,6 @@ struct ov02c10 {
 	/* MIPI lane info */
 	u32 link_freq_index;
 	u8 mipi_lanes;
-
-	/* Power cycling rate limit */
-	ktime_t last_power_off;
 };
 
 static inline struct ov02c10 *to_ov02c10(struct v4l2_subdev *subdev)
@@ -690,27 +677,13 @@ static int ov02c10_power_off(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 
-	/* 1. Assert Reset */
 	gpiod_set_value_cansleep(ov02c10->reset, 1);
+	usleep_range(2000, 2200);
 
-	/* 2. Disable Clock (Stop sensor state machine) */
 	clk_disable_unprepare(ov02c10->img_clk);
-	usleep_range(1000, 1500);
 
-	/* 3. Disable Power */
 	regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
 			       ov02c10->supplies);
-
-	/*
-	 * 4. Float Reset GPIO
-	 * Switch reset GPIO to input (high-impedance) to prevent current
-	 * backfeeding through the sensor's internal protection diodes.
-	 * This allows the regulators to discharge quickly without a current path.
-	 */
-	if (ov02c10->reset)
-		gpiod_direction_input(ov02c10->reset);
-
-	ov02c10->last_power_off = ktime_get();
 
 	return 0;
 }
@@ -720,51 +693,36 @@ static int ov02c10_power_on(struct device *dev)
 	struct v4l2_subdev *sd = dev_get_drvdata(dev);
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 	int ret;
-	s64 delta_us;
 
-	/*
-	 * Mandatory Cool-Down:
-	 * Enforce minimum delay between power-off and power-on to prevent
-	 * brownout conditions. Without hardware active-discharge support in
-	 * the RPMh regulator driver, we rely on passive discharge which
-	 * requires a longer delay.
-	 */
-	delta_us = ktime_us_delta(ktime_get(), ov02c10->last_power_off);
-	if (delta_us < OV02C10_POWER_CYCLE_DELAY_US) {
-		s64 sleep_us = OV02C10_POWER_CYCLE_DELAY_US - delta_us;
-		dev_dbg(dev, "Enforcing %lld us cool-down period\n", sleep_us);
-		fsleep(sleep_us);
-	}
-
-	/*
-	 * Standard Power-Up Sequence:
-	 * 1. Enable Regulators
-	 * 2. Enable Clock
-	 * 3. Release Reset (with ample boot time)
-	 */
-
-	ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
-				    ov02c10->supplies);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable regulators: %d", ret);
-		return ret;
+	if (ov02c10->reset) {
+		/* Ensure reset is asserted before trying to power_on */
+		gpiod_set_value_cansleep(ov02c10->reset, 1);
+		usleep_range(2000, 2200);
 	}
 
 	ret = clk_prepare_enable(ov02c10->img_clk);
 	if (ret < 0) {
 		dev_err(dev, "failed to enable imaging clock: %d", ret);
-		regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
-				       ov02c10->supplies);
 		return ret;
 	}
 
-	/* Wait for power/clock to stabilize */
-	usleep_range(5000, 5500);
+	/* Let the clock stabilise */
+	usleep_range(2000, 2200);
+
+	ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
+				    ov02c10->supplies);
+	if (ret < 0) {
+		dev_err(dev, "failed to enable regulators: %d", ret);
+		clk_disable_unprepare(ov02c10->img_clk);
+		return ret;
+	}
 
 	if (ov02c10->reset) {
-		/* Reconfigure as output and release reset */
-		gpiod_direction_output(ov02c10->reset, 0);
-		usleep_range(80000, 85000);
+		/* Assert reset for at least 2ms on back to back off-on */
+		usleep_range(2000, 2200);
+		gpiod_set_value_cansleep(ov02c10->reset, 0);
+		/* This is where we need to capture power_on() T2 */
+		usleep_range(5000, 5100);
 	}
 
 	return 0;
