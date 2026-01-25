@@ -19,6 +19,7 @@ struct x1e80100_snd_cfg {
 	const char *driver_name;
 	const unsigned int *channels_map;
 	int channels_num;
+	const char *topology_shortname;
 };
 
 struct x1e80100_snd_data {
@@ -201,6 +202,11 @@ static int x1e80100_platform_probe(struct platform_device *pdev)
 	data->cfg = of_device_get_match_data(dev);
 
 	card->driver_name = data->cfg->driver_name;
+	
+	/* Load topology file if specified in config */
+	if (data->cfg->topology_shortname)
+		card->topology_shortname = data->cfg->topology_shortname;
+	
 	x1e80100_add_be_ops(card);
 
 	return devm_snd_soc_register_card(dev, card);
@@ -229,6 +235,7 @@ static const struct x1e80100_snd_cfg dell_xps13_9345_cfg = {
 
 static const struct x1e80100_snd_cfg lenovo_yoga_slim7x_cfg = {
 	.driver_name = "x1e80100",
+	.topology_shortname = "X1E80100-LENOVO-Yoga-Slim7x-tplg.bin",
 };
 
 static const struct of_device_id snd_x1e80100_dt_match[] = {
