@@ -147,8 +147,17 @@ static bool migrate_one_irq(struct irq_desc *desc)
 	}
 
 	if (err) {
-		pr_warn_ratelimited("IRQ%u: set affinity failed(%d).\n",
-				    d->irq, err);
+		/*
+		 * -EINVAL typically means the IRQ chip doesn't support
+		 * affinity changes at this moment (e.g., during suspend_noirq).
+		 * This is non-fatal for s2idle where CPUs stay online.
+		 */
+		if (err == -EINVAL)
+			pr_debug("IRQ%u: set affinity failed (not supported in current state)\n",
+				 d->irq);
+		else
+			pr_warn_ratelimited("IRQ%u: set affinity failed(%d).\n",
+					    d->irq, err);
 		brokeaff = false;
 	}
 
