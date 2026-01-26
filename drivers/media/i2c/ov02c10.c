@@ -692,9 +692,9 @@ static int ov02c10_power_on(struct device *dev)
 
 	if (ov02c10->reset) {
 		/* Assert reset for at least 2ms on back to back off-on */
-		usleep_range(2000, 2200);
+		usleep_range(5000, 5500);
 		gpiod_set_value_cansleep(ov02c10->reset, 0);
-		usleep_range(5000, 5100);
+		usleep_range(20000, 21000);
 	}
 
 	return 0;
