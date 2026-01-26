@@ -154,10 +154,12 @@ int ath12k_reg_update_chan_list(struct ath12k *ar, bool wait)
 			    IEEE80211_CHAN_DISABLED)
 				continue;
 			/* Skip Channels that are not in current radio's range */
-			if (bands[band]->channels[i].center_freq <
-			    KHZ_TO_MHZ(ar->freq_range.start_freq) ||
-			    bands[band]->channels[i].center_freq >
-			    KHZ_TO_MHZ(ar->freq_range.end_freq))
+			/* Skip check if regulatory range hasn't been populated yet */
+			if (ar->freq_range.end_freq != 0 &&
+			    (bands[band]->channels[i].center_freq <
+			     KHZ_TO_MHZ(ar->freq_range.start_freq) ||
+			     bands[band]->channels[i].center_freq >
+			     KHZ_TO_MHZ(ar->freq_range.end_freq)))
 				continue;
 
 			num_channels++;
@@ -191,10 +193,12 @@ int ath12k_reg_update_chan_list(struct ath12k *ar, bool wait)
 				continue;
 
 			/* Skip Channels that are not in current radio's range */
-			if (bands[band]->channels[i].center_freq <
-			    KHZ_TO_MHZ(ar->freq_range.start_freq) ||
-			    bands[band]->channels[i].center_freq >
-			    KHZ_TO_MHZ(ar->freq_range.end_freq))
+			/* Skip check if regulatory range hasn't been populated yet */
+			if (ar->freq_range.end_freq != 0 &&
+			    (bands[band]->channels[i].center_freq <
+			     KHZ_TO_MHZ(ar->freq_range.start_freq) ||
+			     bands[band]->channels[i].center_freq >
+			     KHZ_TO_MHZ(ar->freq_range.end_freq)))
 				continue;
 
 			/* TODO: Set to true/false based on some condition? */
