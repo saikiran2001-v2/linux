@@ -3260,6 +3260,11 @@ static int qmp_combo_usb_power_on(struct phy *phy)
 		goto err_disable_pipe_clk;
 	}
 
+	/* Wait for PHY pipe clock to fully stabilize after status register indicates ready.
+    * This fixes -ETIMEDOUT errors on boot and "Zombie PHY" crashes on disconnect/resume.
+    */
+    usleep_range(2000, 2500);
+
 	return 0;
 
 err_disable_pipe_clk:
@@ -3302,11 +3307,6 @@ static int qmp_combo_usb_init(struct phy *phy)
 		qmp_combo_com_exit(qmp, false);
 		goto out_unlock;
 	}
-
-	/* Wait for PHY pipe clock to stabilize.
-     	* Critical for USB-C monitor detection on boot (fixes -ETIMEDOUT).
-     	*/
-    	usleep_range(2000, 2500);
 
 	qmp->usb_init_count++;
 
