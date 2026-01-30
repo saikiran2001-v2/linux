@@ -1262,6 +1262,7 @@ CONFIG_ATH10K_TRACING                           policy<{'arm64': 'y'}>
 CONFIG_ATH10K_USB                               policy<{'arm64': 'm'}>
 CONFIG_ATH11K                                   policy<{'arm64': 'm'}>
 CONFIG_ATH11K_AHB                               policy<{'arm64': 'm'}>
+CONFIG_ATH11K_CFR                               policy<{'arm64': 'n'}>
 CONFIG_ATH11K_DEBUG                             policy<{'arm64': 'n'}>
 CONFIG_ATH11K_DEBUGFS                           policy<{'arm64': 'y'}>
 CONFIG_ATH11K_PCI                               policy<{'arm64': 'm'}>
