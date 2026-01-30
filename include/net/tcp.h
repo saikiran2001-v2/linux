@@ -809,6 +809,7 @@ static inline int tcp_bound_to_half_wnd(struct tcp_sock *tp, int pktsize)
 
 /* tcp.c */
 void tcp_get_info(struct sock *, struct tcp_info *);
+void tcp_rate_check_app_limited(struct sock *sk);
 
 /* Read 'sendfile()'-style from a TCP socket */
 int tcp_read_sock(struct sock *sk, read_descriptor_t *desc,
@@ -1355,13 +1356,6 @@ static inline void tcp_ca_event(struct sock *sk, const enum tcp_ca_event event)
 /* From tcp_cong.c */
 void tcp_set_ca_state(struct sock *sk, const u8 ca_state);
 
-/* From tcp_rate.c */
-void tcp_rate_skb_sent(struct sock *sk, struct sk_buff *skb);
-void tcp_rate_skb_delivered(struct sock *sk, struct sk_buff *skb,
-			    struct rate_sample *rs);
-void tcp_rate_gen(struct sock *sk, u32 delivered, u32 lost,
-		  bool is_sack_reneg, struct rate_sample *rs);
-void tcp_rate_check_app_limited(struct sock *sk);
 
 static inline bool tcp_skb_sent_after(u64 t1, u64 t2, u32 seq1, u32 seq2)
 {
@@ -2327,8 +2321,6 @@ struct sk_buff *tcp_gro_receive(struct list_head *head, struct sk_buff *skb,
 				struct tcphdr *th);
 INDIRECT_CALLABLE_DECLARE(int tcp4_gro_complete(struct sk_buff *skb, int thoff));
 INDIRECT_CALLABLE_DECLARE(struct sk_buff *tcp4_gro_receive(struct list_head *head, struct sk_buff *skb));
-INDIRECT_CALLABLE_DECLARE(int tcp6_gro_complete(struct sk_buff *skb, int thoff));
-INDIRECT_CALLABLE_DECLARE(struct sk_buff *tcp6_gro_receive(struct list_head *head, struct sk_buff *skb));
 #ifdef CONFIG_INET
 void tcp_gro_complete(struct sk_buff *skb);
 #else
@@ -2522,10 +2514,7 @@ void tcp_newreno_mark_lost(struct sock *sk, bool snd_una_advanced);
 extern s32 tcp_rack_skb_timeout(struct tcp_sock *tp, struct sk_buff *skb,
 				u32 reo_wnd);
 extern bool tcp_rack_mark_lost(struct sock *sk);
-extern void tcp_rack_advance(struct tcp_sock *tp, u8 sacked, u32 end_seq,
-			     u64 xmit_time);
 extern void tcp_rack_reo_timeout(struct sock *sk);
-extern void tcp_rack_update_reo_wnd(struct sock *sk, struct rate_sample *rs);
 
 /* tcp_plb.c */
 

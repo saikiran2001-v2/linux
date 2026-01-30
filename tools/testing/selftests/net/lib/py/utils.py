@@ -41,7 +41,9 @@ class cmd:
         self.ret = None
         self.ksft_term_fd = None
 
+        self.host = host
         self.comm = comm
+
         if host:
             self.proc = host.cmd(comm)
         else:
@@ -99,6 +101,27 @@ class cmd:
             raise CmdExitFailure("Command failed: %s\nSTDOUT: %s\nSTDERR: %s" %
                                  (self.proc.args, stdout, stderr), self)
 
+    def __repr__(self):
+        def str_fmt(name, s):
+            name += ': '
+            return (name + s.strip().replace('\n', '\n' + ' ' * len(name)))
+
+        ret = "CMD"
+        if self.host:
+            ret += "[remote]"
+        if self.ret is None:
+            ret += f" (unterminated): {self.comm}\n"
+        elif self.ret == 0:
+            ret += f" (success): {self.comm}\n"
+        else:
+            ret += f": {self.comm}\n"
+            ret += f"  EXIT: {self.ret}\n"
+        if self.stdout:
+            ret += str_fmt("  STDOUT", self.stdout) + "\n"
+        if self.stderr:
+            ret += str_fmt("  STDERR", self.stderr) + "\n"
+        return ret.strip()
+
 
 class bkg(cmd):
     """
@@ -137,7 +160,7 @@ class bkg(cmd):
 
     def __exit__(self, ex_type, ex_value, ex_tb):
         # Force termination on exception
-        terminate = self.terminate or (self._exit_wait and ex_type)
+        terminate = self.terminate or (self._exit_wait and ex_type is not None)
         return self.process(terminate=terminate, fail=self.check_fail)
 
 
