@@ -193,4 +193,4 @@ build-test.log
 # fakeroot temporary state files
 fakeroot.state.*
 *.backup
-debian.qcom-x1e/changelog
+
