@@ -848,6 +848,7 @@ CONFIG_ARCH_HAS_HW_PTE_YOUNG                    policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_KCOV                            policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_KEEPINITRD                      policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_KERNEL_FPU_SUPPORT              policy<{'arm64': 'y'}>
+CONFIG_ARCH_HAS_LAZY_MMU_MODE                   policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_MEMBARRIER_SYNC_CORE            policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_MEM_ENCRYPT                     policy<{'arm64': 'y'}>
 CONFIG_ARCH_HAS_NMI_SAFE_THIS_CPU_OPS           policy<{'arm64': 'y'}>
@@ -1434,7 +1435,8 @@ CONFIG_BACKLIGHT_SKY81452                       policy<{'arm64': 'm'}>
 CONFIG_BACKLIGHT_TPS65217                       policy<{'arm64': 'm'}>
 CONFIG_BACKLIGHT_WM831X                         policy<{'arm64': 'm'}>
 CONFIG_BACKTRACE_SELF_TEST                      policy<{'arm64': 'n'}>
-CONFIG_BALLOON_COMPACTION                       policy<{'arm64': 'y'}>
+CONFIG_BALLOON                                  policy<{'arm64': 'y'}>
+CONFIG_BALLOON_MIGRATION                        policy<{'arm64': 'y'}>
 CONFIG_BAREUDP                                  policy<{'arm64': 'm'}>
 CONFIG_BASE_SMALL                               policy<{'arm64': 'n'}>
 CONFIG_BASIC_MODVERSIONS                        policy<{'arm64': 'y'}>
@@ -1625,7 +1627,7 @@ CONFIG_BOARD_TPCI200                            policy<{'arm64': 'm'}>
 CONFIG_BONDING                                  policy<{'arm64': 'm'}>
 CONFIG_BOOTPARAM_HARDLOCKUP_PANIC               policy<{'arm64': 'n'}>
 CONFIG_BOOTPARAM_HUNG_TASK_PANIC                policy<{'arm64': '0'}>
-CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               policy<{'arm64': 'n'}>
+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC               policy<{'arm64': '0'}>
 CONFIG_BOOTTIME_TRACING                         policy<{'arm64': 'y'}>
 CONFIG_BOOT_CONFIG                              policy<{'arm64': 'y'}>
 CONFIG_BOOT_CONFIG_EMBED                        policy<{'arm64': 'n'}>
@@ -1895,7 +1897,7 @@ CONFIG_CC_NO_ARRAY_BOUNDS                       policy<{'arm64': 'y'}>
 CONFIG_CC_NO_STRINGOP_OVERFLOW                  policy<{'arm64': 'y'}>
 CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE              policy<{'arm64': 'y'}>
 CONFIG_CC_OPTIMIZE_FOR_SIZE                     policy<{'arm64': 'n'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"aarch64-linux-gnu-gcc (Ubuntu 15.2.0-4ubuntu4) 15.2.0"'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"gcc (Ubuntu 15.2.0-4ubuntu4) 15.2.0"'}>
 CONFIG_CDNS_I3C_MASTER                          policy<{'arm64': 'm'}>
 CONFIG_CDROM                                    policy<{'arm64': 'y'}>
 CONFIG_CDX_BUS                                  policy<{'arm64': 'y'}>
@@ -2905,6 +2907,7 @@ CONFIG_DCACHE_WORD_ACCESS                       policy<{'arm64': 'y'}>
 CONFIG_DCB                                      policy<{'arm64': 'y'}>
 CONFIG_DE2104X                                  policy<{'arm64': 'm'}>
 CONFIG_DE2104X_DSL                              policy<{'arm64': '0'}>
+CONFIG_DEBUG_ATOMIC                             policy<{'arm64': 'n'}>
 CONFIG_DEBUG_ATOMIC_SLEEP                       policy<{'arm64': 'n'}>
 CONFIG_DEBUG_BUGVERBOSE                         policy<{'arm64': 'y'}>
 CONFIG_DEBUG_BUGVERBOSE_DETAILED                policy<{'arm64': 'n'}>
@@ -4330,7 +4333,6 @@ CONFIG_GFS2_FS                                  policy<{'arm64': 'm'}>
 CONFIG_GFS2_FS_LOCKING_DLM                      policy<{'arm64': 'y'}>
 CONFIG_GIANFAR                                  policy<{'arm64': 'm'}>
 CONFIG_GLOB                                     policy<{'arm64': 'y'}>
-CONFIG_GLOB_SELFTEST                            policy<{'arm64': 'n'}>
 CONFIG_GNSS                                     policy<{'arm64': 'm'}>
 CONFIG_GNSS_MTK_SERIAL                          policy<{'arm64': 'm'}>
 CONFIG_GNSS_SERIAL                              policy<{'arm64': 'm'}>
@@ -6355,7 +6357,6 @@ CONFIG_MEMCG                                    policy<{'arm64': 'y'}>
 CONFIG_MEMCG_V1                                 policy<{'arm64': 'n'}>
 CONFIG_MEMFD_CREATE                             policy<{'arm64': 'y'}>
 CONFIG_MEMORY                                   policy<{'arm64': 'y'}>
-CONFIG_MEMORY_BALLOON                           policy<{'arm64': 'y'}>
 CONFIG_MEMORY_FAILURE                           policy<{'arm64': 'y'}>
 CONFIG_MEMORY_HOTPLUG                           policy<{'arm64': 'y'}>
 CONFIG_MEMORY_HOTREMOVE                         policy<{'arm64': 'y'}>
@@ -8519,7 +8520,6 @@ CONFIG_PINCTRL_SM8150                           policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_SM8250                           policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_SM8250_LPASS_LPI                 policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_SM8350                           policy<{'arm64': 'm'}>
-CONFIG_PINCTRL_SM8350_LPASS_LPI                 policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_SM8450                           policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_SM8450_LPASS_LPI                 policy<{'arm64': 'm'}>
 CONFIG_PINCTRL_SM8550                           policy<{'arm64': 'm'}>
@@ -8755,6 +8755,7 @@ CONFIG_PTP_1588_CLOCK_QORIQ                     policy<{'arm64': 'm'}>
 CONFIG_PTP_1588_CLOCK_VMCLOCK                   policy<{'arm64': 'm'}>
 CONFIG_PTP_DFL_TOD                              policy<{'arm64': 'm'}>
 CONFIG_PTP_NETC_V4_TIMER                        policy<{'arm64': 'n'}>
+CONFIG_PT_RECLAIM                               policy<{'arm64': 'y'}>
 CONFIG_PVPANIC                                  policy<{'arm64': 'y'}>
 CONFIG_PVPANIC_MMIO                             policy<{'arm64': 'm'}>
 CONFIG_PVPANIC_PCI                              policy<{'arm64': 'm'}>
@@ -9681,12 +9682,9 @@ CONFIG_RTW89_PCI                                policy<{'arm64': 'm'}>
 CONFIG_RT_GROUP_SCHED                           policy<{'arm64': 'n'}>
 CONFIG_RT_MUTEXES                               policy<{'arm64': 'y'}>
 CONFIG_RUNTIME_TESTING_MENU                     policy<{'arm64': 'y'}>
-CONFIG_RUSTC_HAS_COERCE_POINTEE                 policy<{'arm64': 'y'}>
-CONFIG_RUSTC_HAS_SLICE_AS_FLATTENED             policy<{'arm64': 'y'}>
-CONFIG_RUSTC_LLVM_VERSION                       policy<{'arm64': '190107'}>
+CONFIG_RUSTC_LLVM_VERSION                       policy<{'arm64': '0'}>
 CONFIG_RUSTC_SUPPORTS_ARM64                     policy<{'arm64': 'y'}>
-CONFIG_RUSTC_VERSION                            policy<{'arm64': '108501'}>
-CONFIG_RUST_IS_AVAILABLE                        policy<{'arm64': 'y'}>
+CONFIG_RUSTC_VERSION                            policy<{'arm64': '0'}>
 CONFIG_RV                                       policy<{'arm64': 'y'}>
 CONFIG_RVU_ESWITCH                              policy<{'arm64': 'm'}>
 CONFIG_RV_MON_EVENTS                            policy<{'arm64': 'y'}>
@@ -11841,7 +11839,6 @@ CONFIG_TEST_LOCKUP                              policy<{'arm64': 'n'}>
 CONFIG_TEST_MAPLE_TREE                          policy<{'arm64': 'n'}>
 CONFIG_TEST_MEMCAT_P                            policy<{'arm64': 'n'}>
 CONFIG_TEST_MEMINIT                             policy<{'arm64': 'n'}>
-CONFIG_TEST_MIN_HEAP                            policy<{'arm64': 'n'}>
 CONFIG_TEST_MULDIV64                            policy<{'arm64': 'n'}>
 CONFIG_TEST_OBJAGG                              policy<{'arm64': 'n'}>
 CONFIG_TEST_OBJPOOL                             policy<{'arm64': 'n'}>
@@ -11853,7 +11850,6 @@ CONFIG_TEST_STATIC_KEYS                         policy<{'arm64': 'n'}>
 CONFIG_TEST_SYSCTL                              policy<{'arm64': 'n'}>
 CONFIG_TEST_UBSAN                               policy<{'arm64': 'n'}>
 CONFIG_TEST_UDELAY                              policy<{'arm64': 'n'}>
-CONFIG_TEST_UUID                                policy<{'arm64': 'n'}>
 CONFIG_TEST_VMALLOC                             policy<{'arm64': 'n'}>
 CONFIG_TEST_XARRAY                              policy<{'arm64': 'n'}>
 CONFIG_TEXTSEARCH                               policy<{'arm64': 'y'}>
