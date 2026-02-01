@@ -575,6 +575,16 @@ static int msm_dp_display_usbpd_attention_cb(struct device *dev)
 	u32 sink_request;
 	struct msm_dp_display_private *dp = dev_get_dp_display_private(dev);
 
+	/*
+	 * Fix: unexpected hotplug during suspend.
+	 * If the device is not runtime active, we cannot handle the IRQ safely.
+	 * The HPD event will be re-checked when the bridge is enabled.
+	 */
+	if (pm_runtime_suspended(dev)) {
+		DRM_DEBUG_DP("Dropping HPD attention event during suspend\n");
+		return 0;
+	}
+
 	/* check for any test request issued by sink */
 	rc = msm_dp_link_process_request(dp->link);
 	if (!rc) {
@@ -1599,6 +1609,12 @@ void msm_dp_bridge_atomic_enable(struct drm_bridge *drm_bridge,
 	struct msm_dp_display_private *msm_dp_display;
 	u32 hpd_state;
 	bool force_link_train = false;
+
+	/*
+	 * Ensure we flush any pending HPD events that might have fired 
+	 * while we were resuming but before the bridge was ready.
+	 */
+	pm_runtime_get_sync(&dp->pdev->dev);
 
 	msm_dp_display = container_of(dp, struct msm_dp_display_private, msm_dp_display);
 	if (!msm_dp_display->msm_dp_mode.drm_mode.clock) {
