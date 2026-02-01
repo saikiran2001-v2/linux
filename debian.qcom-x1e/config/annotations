@@ -121,7 +121,7 @@ CONFIG_DEBUG_INFO_SPLIT                         policy<{'arm64': 'n'}>
 CONFIG_DEBUG_INFO_SPLIT                         note<'LP: #1413664'>
 
 CONFIG_DEBUG_KERNEL                             policy<{'arm64': 'y'}>
-CONFIG_DEBUG_KERNEL                             note<'required debug option'>
+CONFIG_DEBUG_KERNEL                             note<'forced by CONFIG_EXPERT'>
 
 CONFIG_DEFAULT_MMAP_MIN_ADDR                    policy<{'arm64': '32768'}>
 CONFIG_DEFAULT_MMAP_MIN_ADDR                    note<'LP: #1531327'>
@@ -10465,8 +10465,7 @@ CONFIG_SLIP_MODE_SLIP6                          policy<{'arm64': 'y'}>
 CONFIG_SLIP_SMART                               policy<{'arm64': 'y'}>
 CONFIG_SLUB                                     policy<{'arm64': 'y'}>
 CONFIG_SLUB_CPU_PARTIAL                         policy<{'arm64': 'y'}>
-CONFIG_SLUB_DEBUG                               policy<{'arm64': 'y'}>
-CONFIG_SLUB_DEBUG_ON                            policy<{'arm64': 'n'}>
+CONFIG_SLUB_DEBUG                               policy<{'arm64': 'n'}>
 CONFIG_SLUB_STATS                               policy<{'arm64': 'n'}>
 CONFIG_SLUB_TINY                                policy<{'arm64': 'n'}>
 CONFIG_SMARTJOYPLUS_FF                          policy<{'arm64': 'y'}>
@@ -11538,8 +11537,6 @@ CONFIG_SSB_SDIOHOST_POSSIBLE                    policy<{'arm64': 'y'}>
 CONFIG_SSB_SPROM                                policy<{'arm64': 'y'}>
 CONFIG_SSFDC                                    policy<{'arm64': 'm'}>
 CONFIG_SSIF_IPMI_BMC                            policy<{'arm64': 'm'}>
-CONFIG_STACKDEPOT                               policy<{'arm64': 'y'}>
-CONFIG_STACKDEPOT_MAX_FRAMES                    policy<{'arm64': '64'}>
 CONFIG_STACKPROTECTOR                           policy<{'arm64': 'y'}>
 CONFIG_STACKPROTECTOR_PER_TASK                  policy<{'arm64': 'y'}>
 CONFIG_STACKPROTECTOR_STRONG                    policy<{'arm64': 'y'}>
