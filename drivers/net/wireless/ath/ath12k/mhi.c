@@ -501,16 +501,21 @@ out:
 
 void ath12k_mhi_stop(struct ath12k_pci *ab_pci, bool is_suspend)
 {
-	/* During suspend we need to use mhi_power_down_keep_dev()
-	 * workaround, otherwise ath12k_core_resume() will timeout
-	 * during resume.
+	/* During suspend, we need to use mhi_power_down_keep_dev()
+	 * and avoid calling MHI_DEINIT. The deinit frees BHIE tables
+	 * which causes memory corruption when those pages are
+	 * accessed/freed again during resume. We want to keep the
+	 * device prepared for resume, otherwise ath12k_core_resume()
+	 * will timeout.
 	 */
 	if (is_suspend)
 		ath12k_mhi_set_state(ab_pci, ATH12K_MHI_POWER_OFF_KEEP_DEV);
 	else
 		ath12k_mhi_set_state(ab_pci, ATH12K_MHI_POWER_OFF);
 
-	ath12k_mhi_set_state(ab_pci, ATH12K_MHI_DEINIT);
+	/* Only deinit when doing full power down, not during suspend */
+	if (!is_suspend)
+		ath12k_mhi_set_state(ab_pci, ATH12K_MHI_DEINIT);
 }
 
 void ath12k_mhi_suspend(struct ath12k_pci *ab_pci)
