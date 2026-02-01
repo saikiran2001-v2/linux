@@ -1361,6 +1361,12 @@ void msm_dp_bridge_atomic_enable(struct drm_bridge *drm_bridge,
 	struct msm_dp_display_private *msm_dp_display;
 	bool force_link_train = false;
 
+	/*
+	 * Ensure we flush any pending HPD events that might have fired
+	 * while we were resuming but before the bridge was ready.
+	 */
+	pm_runtime_get_sync(&dp->pdev->dev);
+
 	msm_dp_display = container_of(dp, struct msm_dp_display_private, msm_dp_display);
 	if (!msm_dp_display->msm_dp_mode.drm_mode.clock) {
 		DRM_ERROR("invalid params\n");
@@ -1519,9 +1525,20 @@ void msm_dp_bridge_hpd_notify(struct drm_bridge *bridge,
 	struct msm_dp_bridge *msm_dp_bridge = to_dp_bridge(bridge);
 	struct msm_dp *msm_dp_display = msm_dp_bridge->msm_dp_display;
 	struct msm_dp_display_private *dp = container_of(msm_dp_display, struct msm_dp_display_private, msm_dp_display);
+	struct device *dev = &msm_dp_display->pdev->dev;
 	u32 hpd_link_status = 0;
 
-	if (pm_runtime_resume_and_get(&msm_dp_display->pdev->dev)) {
+	/*
+	 * Fix: unexpected hotplug during suspend.
+	 * If the device is not runtime active, we cannot handle the IRQ safely.
+	 * The HPD event will be re-checked when the bridge is enabled.
+	 */
+	if (pm_runtime_suspended(dev)) {
+		drm_dbg_dp(dp->drm_dev, "Dropping HPD event during suspend\n");
+		return;
+	}
+
+	if (pm_runtime_resume_and_get(dev)) {
 		DRM_ERROR("failed to pm_runtime_resume\n");
 		return;
 	}
