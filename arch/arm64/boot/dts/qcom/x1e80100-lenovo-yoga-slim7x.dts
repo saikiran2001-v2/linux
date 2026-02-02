@@ -956,6 +956,9 @@
 		compatible = "hid-over-i2c";
 		reg = <0x2c>;
 
+		vdd-supply = <&vreg_l8b_3p0>;
+		vddl-supply = <&vreg_l15b_1p8>;
+
 		hid-descr-addr = <0x20>;
 		interrupts-extended = <&tlmm 3 IRQ_TYPE_LEVEL_LOW>;
 
@@ -968,6 +971,9 @@
 	keyboard@3a {
 		compatible = "hid-over-i2c";
 		reg = <0x3a>;
+
+		vdd-supply = <&vreg_l8b_3p0>;
+		vddl-supply = <&vreg_l15b_1p8>;
 
 		hid-descr-addr = <0x1>;
 		interrupts-extended = <&tlmm 67 IRQ_TYPE_LEVEL_LOW>;
@@ -1175,6 +1181,9 @@
 	touchscreen@14 {
 		compatible = "hid-over-i2c";
 		reg = <0x14>;
+
+		vdd-supply = <&vreg_l8b_3p0>;
+		vddl-supply = <&vreg_l15b_1p8>;
 
 		hid-descr-addr = <0x1>;
 		interrupts-extended = <&tlmm 51 IRQ_TYPE_LEVEL_LOW>;
