@@ -75,8 +75,8 @@ CONFIG_CHR_DEV_SG                               note<'not autoloadable'>
 CONFIG_CMA                                      policy<{'arm64': 'y'}>
 CONFIG_CMA                                      note<'LP: #1803206'>
 
-CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '32'}>
-CONFIG_CMA_SIZE_MBYTES                          note<'LP: #1823753'>
+CONFIG_CMA_SIZE_MBYTES                          policy<{'arm64': '256'}>
+CONFIG_CMA_SIZE_MBYTES                          note<'LP: #1823753, increased for X1E multimedia workloads'>
 
 CONFIG_CONSOLE_LOGLEVEL_QUIET                   policy<{'arm64': '3'}>
 CONFIG_CONSOLE_LOGLEVEL_QUIET                   note<'LP: #2049390'>
