@@ -1,3 +1,9 @@
+linux-silvercore-x1e (6.19.0-rc8-6) oracular; urgency=medium
+
+  * Automated build after upstream merge
+
+ -- Saikiran <bjsaikiran@gmail.com>  Tue, 03 Feb 2026 23:07:12 +0530
+
 linux-silvercore-x1e (6.19.0-rc8-5) oracular; urgency=medium
 
   * Automated build after upstream merge
