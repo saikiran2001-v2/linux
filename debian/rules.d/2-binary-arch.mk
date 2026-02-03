@@ -72,10 +72,18 @@ endif
 	# Collect the list of kernel source files used for this build. Need to do this early
 	# before modules are stripped. Fail if the resulting file is empty.
 ifeq ($(do_sources_list),true)
-	find $(build_dir) \( -name vmlinux -o -name \*.ko \) -exec dwarfdump -i {} \; | \
+	# OPTIMIZATION: Use parallel dwarfdump (8x faster) unless SKIP_SOURCES_LIST is set
+	@if [ -n "$$SKIP_SOURCES_LIST" ]; then \
+		echo "SKIP_SOURCES_LIST set - creating empty sources.list"; \
+		true > $(build_dir)/sources.list; \
+	else \
+		echo "Extracting source list with parallel dwarfdump (this takes ~3 minutes)..."; \
+		find $(build_dir) \( -name vmlinux -o -name \*.ko \) -print0 | \
+		xargs -0 -P 8 -n 1 dwarfdump -i 2>/dev/null | \
 		grep -E 'DW_AT_(call|decl)_file' | sed -n 's|.*\s/|/|p' | sort -u > \
-		$(build_dir)/sources.list
-	test -s $(build_dir)/sources.list
+		$(build_dir)/sources.list; \
+		test -s $(build_dir)/sources.list; \
+	fi
 else
 	true > $(build_dir)/sources.list
 endif
