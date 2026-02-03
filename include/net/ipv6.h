@@ -931,10 +931,10 @@ static inline void iph_to_flow_copy_v6addrs(struct flow_keys *flow,
 
 #if IS_ENABLED(CONFIG_IPV6)
 
-static inline bool ipv6_can_nonlocal_bind(struct net *net,
-					  struct inet_sock *inet)
+static inline bool ipv6_can_nonlocal_bind(const struct net *net,
+					  const struct inet_sock *inet)
 {
-	return net->ipv6.sysctl.ip_nonlocal_bind ||
+	return READ_ONCE(net->ipv6.sysctl.ip_nonlocal_bind) ||
 		test_bit(INET_FLAGS_FREEBIND, &inet->inet_flags) ||
 		test_bit(INET_FLAGS_TRANSPARENT, &inet->inet_flags);
 }
@@ -949,10 +949,12 @@ static inline bool ipv6_can_nonlocal_bind(struct net *net,
 
 #define IP6_DEFAULT_AUTO_FLOW_LABELS	IP6_AUTO_FLOW_LABEL_OPTOUT
 
-static inline __be32 ip6_make_flowlabel(struct net *net, struct sk_buff *skb,
+static inline __be32 ip6_make_flowlabel(const struct net *net,
+					struct sk_buff *skb,
 					__be32 flowlabel, bool autolabel,
 					struct flowi6 *fl6)
 {
+	u8 auto_flowlabels;
 	u32 hash;
 
 	/* @flowlabel may include more than a flow label, eg, the traffic class.
@@ -960,10 +962,12 @@ static inline __be32 ip6_make_flowlabel(struct net *net, struct sk_buff *skb,
 	 */
 	flowlabel &= IPV6_FLOWLABEL_MASK;
 
-	if (flowlabel ||
-	    net->ipv6.sysctl.auto_flowlabels == IP6_AUTO_FLOW_LABEL_OFF ||
-	    (!autolabel &&
-	     net->ipv6.sysctl.auto_flowlabels != IP6_AUTO_FLOW_LABEL_FORCED))
+	if (flowlabel)
+		return flowlabel;
+
+	auto_flowlabels = READ_ONCE(net->ipv6.sysctl.auto_flowlabels);
+	if (auto_flowlabels == IP6_AUTO_FLOW_LABEL_OFF ||
+	    (!autolabel && auto_flowlabels != IP6_AUTO_FLOW_LABEL_FORCED))
 		return flowlabel;
 
 	hash = skb_get_hash_flowi6(skb, fl6);
@@ -976,15 +980,15 @@ static inline __be32 ip6_make_flowlabel(struct net *net, struct sk_buff *skb,
 
 	flowlabel = (__force __be32)hash & IPV6_FLOWLABEL_MASK;
 
-	if (net->ipv6.sysctl.flowlabel_state_ranges)
+	if (READ_ONCE(net->ipv6.sysctl.flowlabel_state_ranges))
 		flowlabel |= IPV6_FLOWLABEL_STATELESS_FLAG;
 
 	return flowlabel;
 }
 
-static inline int ip6_default_np_autolabel(struct net *net)
+static inline int ip6_default_np_autolabel(const struct net *net)
 {
-	switch (net->ipv6.sysctl.auto_flowlabels) {
+	switch (READ_ONCE(net->ipv6.sysctl.auto_flowlabels)) {
 	case IP6_AUTO_FLOW_LABEL_OFF:
 	case IP6_AUTO_FLOW_LABEL_OPTIN:
 	default:
@@ -995,13 +999,13 @@ static inline int ip6_default_np_autolabel(struct net *net)
 	}
 }
 #else
-static inline __be32 ip6_make_flowlabel(struct net *net, struct sk_buff *skb,
+static inline __be32 ip6_make_flowlabel(const struct net *net, struct sk_buff *skb,
 					__be32 flowlabel, bool autolabel,
 					struct flowi6 *fl6)
 {
 	return flowlabel;
 }
-static inline int ip6_default_np_autolabel(struct net *net)
+static inline int ip6_default_np_autolabel(const struct net *net)
 {
 	return 0;
 }
@@ -1010,11 +1014,11 @@ static inline int ip6_default_np_autolabel(struct net *net)
 #if IS_ENABLED(CONFIG_IPV6)
 static inline int ip6_multipath_hash_policy(const struct net *net)
 {
-	return net->ipv6.sysctl.multipath_hash_policy;
+	return READ_ONCE(net->ipv6.sysctl.multipath_hash_policy);
 }
 static inline u32 ip6_multipath_hash_fields(const struct net *net)
 {
-	return net->ipv6.sysctl.multipath_hash_fields;
+	return READ_ONCE(net->ipv6.sysctl.multipath_hash_fields);
 }
 #else
 static inline int ip6_multipath_hash_policy(const struct net *net)
@@ -1170,9 +1174,19 @@ int ipv6_find_hdr(const struct sk_buff *skb, unsigned int *offset, int target,
 
 int ipv6_find_tlv(const struct sk_buff *skb, int offset, int type);
 
-struct in6_addr *fl6_update_dst(struct flowi6 *fl6,
-				const struct ipv6_txoptions *opt,
-				struct in6_addr *orig);
+struct in6_addr *__fl6_update_dst(struct flowi6 *fl6,
+				  const struct ipv6_txoptions *opt,
+				  struct in6_addr *orig);
+
+static inline struct in6_addr *
+fl6_update_dst(struct flowi6 *fl6, const struct ipv6_txoptions *opt,
+	       struct in6_addr *orig)
+{
+	if (likely(!opt))
+		return NULL;
+
+	return __fl6_update_dst(fl6, opt, orig);
+}
 
 /*
  *	socket options (ipv6_sockglue.c)
@@ -1188,10 +1202,10 @@ int do_ipv6_getsockopt(struct sock *sk, int level, int optname,
 int ipv6_getsockopt(struct sock *sk, int level, int optname,
 		    char __user *optval, int __user *optlen);
 
-int __ip6_datagram_connect(struct sock *sk, struct sockaddr *addr,
+int __ip6_datagram_connect(struct sock *sk, struct sockaddr_unsized *addr,
 			   int addr_len);
-int ip6_datagram_connect(struct sock *sk, struct sockaddr *addr, int addr_len);
-int ip6_datagram_connect_v6_only(struct sock *sk, struct sockaddr *addr,
+int ip6_datagram_connect(struct sock *sk, struct sockaddr_unsized *addr, int addr_len);
+int ip6_datagram_connect_v6_only(struct sock *sk, struct sockaddr_unsized *addr,
 				 int addr_len);
 int ip6_datagram_dst_update(struct sock *sk, bool fix_sk_saddr);
 void ip6_datagram_release_cb(struct sock *sk);
@@ -1208,8 +1222,8 @@ void ipv6_local_rxpmtu(struct sock *sk, struct flowi6 *fl6, u32 mtu);
 void inet6_cleanup_sock(struct sock *sk);
 void inet6_sock_destruct(struct sock *sk);
 int inet6_release(struct socket *sock);
-int inet6_bind(struct socket *sock, struct sockaddr *uaddr, int addr_len);
-int inet6_bind_sk(struct sock *sk, struct sockaddr *uaddr, int addr_len);
+int inet6_bind(struct socket *sock, struct sockaddr_unsized *uaddr, int addr_len);
+int inet6_bind_sk(struct sock *sk, struct sockaddr_unsized *uaddr, int addr_len);
 int inet6_getname(struct socket *sock, struct sockaddr *uaddr,
 		  int peer);
 int inet6_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg);
