@@ -1730,6 +1730,70 @@ sd_init(struct sched_domain_topology_level *tl,
 		sd->shared = *per_cpu_ptr(sdd->sds, sd_id);
 		atomic_inc(&sd->shared->ref);
 		atomic_set(&sd->shared->nr_busy_cpus, sd_weight);
+
+#ifdef CONFIG_SCHED_POC_SELECTOR
+		int range = cpumask_last(sd_span) - sd_id + 1;
+		int nr_words = DIV_ROUND_UP(range, 64);
+		int i;
+
+		sd->shared->poc_cpu_base = sd_id;
+		if (nr_words <= POC_MASK_WORDS_MAX) {
+			sd->shared->poc_nr_words = nr_words;
+			sd->shared->poc_fast_eligible = true;
+		} else {
+			sd->shared->poc_nr_words = 0;
+			sd->shared->poc_fast_eligible = false;
+		}
+		for (i = 0; i < POC_MASK_WORDS_MAX; i++) {
+			atomic64_set(&sd->shared->poc_idle_cpus[i], 0);
+			atomic64_set(&sd->shared->poc_idle_cores[i], 0);
+		}
+
+		sd->shared->poc_cluster_valid = false;
+		sd->shared->poc_cluster_shift = 0;
+
+#ifdef CONFIG_SCHED_CLUSTER
+		/*
+		 * Detect cluster (L2-sharing) topology for Level 1.5
+		 * cluster-local search in POC selector.
+		 *
+		 * Uses cpu_clustergroup_mask() which returns the L2
+		 * cache sharing mask on x86.  Validates that all
+		 * clusters are uniform (same size, power-of-2, and
+		 * naturally aligned in POC bit space).
+		 */
+		if (sd->shared->poc_fast_eligible) {
+			const struct cpumask *cls_mask =
+				cpu_clustergroup_mask(sd_id);
+			int cls_size = cpumask_weight(cls_mask);
+			int smt_size = cpumask_weight(cpu_smt_mask(sd_id));
+
+			if (cls_size > smt_size &&
+			    is_power_of_2(cls_size)) {
+				bool valid = true;
+				int cpu_iter;
+
+				for_each_cpu(cpu_iter, sd_span) {
+					const struct cpumask *m =
+						cpu_clustergroup_mask(cpu_iter);
+					int first = cpumask_first(m);
+					int rel = first - sd_id;
+
+					if (cpumask_weight(m) != cls_size ||
+					    (rel & (cls_size - 1)) != 0) {
+						valid = false;
+						break;
+					}
+				}
+				if (valid) {
+					sd->shared->poc_cluster_shift =
+						ilog2(cls_size);
+					sd->shared->poc_cluster_valid = true;
+				}
+			}
+		}
+#endif /* CONFIG_SCHED_CLUSTER */
+#endif /* CONFIG_SCHED_POC_SELECTOR */
 	}
 
 	sd->private = sdd;

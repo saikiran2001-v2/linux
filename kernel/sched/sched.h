@@ -3312,6 +3312,19 @@ extern void nohz_run_idle_balance(int cpu);
 static inline void nohz_run_idle_balance(int cpu) { }
 #endif
 
+#ifdef CONFIG_SCHED_POC_SELECTOR
+extern struct static_key_true sched_poc_enabled;
+extern void __set_cpu_idle_state(int cpu, int state);
+static __always_inline void set_cpu_idle_state(int cpu, int state)
+{
+	if (static_branch_likely(&sched_poc_enabled) &&
+	    !sched_asym_cpucap_active())
+		__set_cpu_idle_state(cpu, state);
+}
+#else
+static inline void set_cpu_idle_state(int cpu, int state) { }
+#endif
+
 #include "stats.h"
 
 #if defined(CONFIG_SCHED_CORE) && defined(CONFIG_SCHEDSTATS)

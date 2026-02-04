@@ -7712,6 +7712,9 @@ static inline int select_idle_smt(struct task_struct *p, struct sched_domain *sd
 
 #endif /* !CONFIG_SCHED_SMT */
 
+#ifdef CONFIG_SCHED_POC_SELECTOR
+#include "poc_selector.c"
+#endif
 /*
  * Scan the LLC domain for idle CPUs; this is dynamically regulated by
  * comparing the average scan cost (tracked in sd->avg_scan_cost) against the
@@ -7723,11 +7726,24 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool 
 	int i, cpu, idle_cpu = -1, nr = INT_MAX;
 	struct sched_domain_shared *sd_share;
 
-	cpumask_and(cpus, sched_domain_span(sd), p->cpus_ptr);
-
-	if (sched_feat(SIS_UTIL)) {
-		sd_share = rcu_dereference(per_cpu(sd_llc_shared, target));
-		if (sd_share) {
+	sd_share = rcu_dereference(per_cpu(sd_llc_shared, target));
+	if (sd_share) {
+#ifdef CONFIG_SCHED_POC_SELECTOR
+		if (static_branch_likely(&sched_poc_enabled) &&
+				!sched_asym_cpucap_active() &&
+				likely(p->nr_cpus_allowed >= sd->span_weight) &&
+				likely(sd_share->poc_fast_eligible)) {
+			int poc_cpu = select_idle_cpu_poc(has_idle_core, target, sd_share);
+			if (poc_cpu >= 0) {
+				POC_DBG_INC_HIT();
+				POC_DBG_INC_SELECTED(poc_cpu);
+			} else {
+				POC_DBG_INC_FALLTHROUGH();
+			}
+			return poc_cpu;
+		}
+#endif
+		if (sched_feat(SIS_UTIL)) {
 			/* because !--nr is the condition to stop scan */
 			nr = READ_ONCE(sd_share->nr_idle_scan) + 1;
 			/* overloaded LLC is unlikely to have idle cpu/core */
@@ -7735,6 +7751,8 @@ static int select_idle_cpu(struct task_struct *p, struct sched_domain *sd, bool 
 				return -1;
 		}
 	}
+
+	cpumask_and(cpus, sched_domain_span(sd), p->cpus_ptr);
 
 	if (static_branch_unlikely(&sched_cluster_active)) {
 		struct sched_group *sg = sd->groups;
