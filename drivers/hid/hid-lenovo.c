@@ -48,6 +48,8 @@ struct lenovo_drvdata {
 	u8 led_report[3]; /* Must be first for proper alignment */
 	int led_state;
 	struct mutex led_report_mutex;
+	enum led_brightness saved_led_mute_brightness;
+	enum led_brightness saved_led_micmute_brightness;
 	struct led_classdev led_mute;
 	struct led_classdev led_micmute;
 	struct work_struct fn_lock_sync_work;
@@ -1422,6 +1424,48 @@ err:
 	return ret;
 }
 
+static int lenovo_suspend(struct hid_device *hdev, pm_message_t message)
+{
+	struct lenovo_drvdata *data = hid_get_drvdata(hdev);
+
+	/* Only handle devices with LED support */
+	if (!data)
+		return 0;
+
+	/* Save current LED brightness before turning off */
+	if (data->led_mute.brightness_get) {
+		data->saved_led_mute_brightness = data->led_mute.brightness;
+		data->saved_led_micmute_brightness = data->led_micmute.brightness;
+
+		/* Turn off LEDs to reduce power consumption during sleep */
+		lenovo_led_brightness_set(&data->led_mute, LED_OFF);
+		lenovo_led_brightness_set(&data->led_micmute, LED_OFF);
+	}
+
+	return 0;
+}
+
+static int lenovo_resume(struct hid_device *hdev)
+{
+	struct lenovo_drvdata *data = hid_get_drvdata(hdev);
+
+	/* Only handle devices with LED support */
+	if (!data)
+		return 0;
+
+	/* Restore LED brightness after resume */
+	if (data->led_mute.brightness_get) {
+		if (data->saved_led_mute_brightness)
+			lenovo_led_brightness_set(&data->led_mute,
+						  data->saved_led_mute_brightness);
+		if (data->saved_led_micmute_brightness)
+			lenovo_led_brightness_set(&data->led_micmute,
+						  data->saved_led_micmute_brightness);
+	}
+
+	return 0;
+}
+
 static int lenovo_reset_resume(struct hid_device *hdev)
 {
 	switch (hdev->product) {
@@ -1569,6 +1613,8 @@ static struct hid_driver lenovo_driver = {
 	.event = lenovo_event,
 	.report_fixup = lenovo_report_fixup,
 	.reset_resume = pm_ptr(lenovo_reset_resume),
+	.suspend = pm_ptr(lenovo_suspend),
+	.resume = pm_ptr(lenovo_resume),
 };
 module_hid_driver(lenovo_driver);
 
