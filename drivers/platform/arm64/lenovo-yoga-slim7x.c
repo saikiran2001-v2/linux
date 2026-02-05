@@ -61,6 +61,7 @@ struct yoga_slim7x_ec {
 	struct i2c_client *client;
 	struct input_dev *idev;
 	struct mutex lock;
+	u8 saved_kbd_backlight;
 };
 
 static irqreturn_t yoga_slim7x_ec_irq(int irq, void *data)
@@ -84,8 +85,15 @@ static irqreturn_t yoga_slim7x_ec_irq(int irq, void *data)
 		input_report_key(ec->idev, KEY_MICMUTE, 0);
 		input_sync(ec->idev);
 		break;
+	case EC_IRQ_FN_SPACE:
+		/* Fn+Space: Keyboard backlight toggle */
+		input_report_key(ec->idev, KEY_KBDILLUMTOGGLE, 1);
+		input_sync(ec->idev);
+		input_report_key(ec->idev, KEY_KBDILLUMTOGGLE, 0);
+		input_sync(ec->idev);
+		break;
 	default:
-		dev_info(dev, "Unhandled EC IRQ reason: %d\n", val);
+		dev_dbg(dev, "Unhandled EC IRQ reason: 0x%02x\n", val);
 	}
 
 	return IRQ_HANDLED;
@@ -110,6 +118,7 @@ static int yoga_slim7x_ec_probe(struct i2c_client *client)
 	ec->idev->name = "yoga-slim7x-ec";
 	ec->idev->phys = "yoga-slim7x-ec/input0";
 	input_set_capability(ec->idev, EV_KEY, KEY_MICMUTE);
+	input_set_capability(ec->idev, EV_KEY, KEY_KBDILLUMTOGGLE);
 
 	ret = input_register_device(ec->idev);
 	if (ret < 0)
@@ -120,6 +129,8 @@ static int yoga_slim7x_ec_probe(struct i2c_client *client)
 					IRQF_ONESHOT, "yoga_slim7x_ec", ec);
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Unable to request irq\n");
+
+	i2c_set_clientdata(client, ec);
 
 	ret = i2c_smbus_write_byte_data(client, EC_IRQ_ENABLE_REG, 0x01);
 	if (ret < 0)
@@ -141,7 +152,18 @@ static void yoga_slim7x_ec_remove(struct i2c_client *client)
 static int yoga_slim7x_ec_suspend(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
+	struct yoga_slim7x_ec *ec = i2c_get_clientdata(client);
 	int ret;
+
+	/* Save current keyboard backlight state */
+	ret = i2c_smbus_read_byte_data(client, EC_BACKLIGHT_STATUS_REG);
+	if (ret >= 0)
+		ec->saved_kbd_backlight = ret;
+
+	/* Turn off keyboard backlight to save power */
+	ret = i2c_smbus_write_byte_data(client, EC_BACKLIGHT_STATUS_REG, 0x00);
+	if (ret)
+		dev_warn(dev, "Failed to turn off keyboard backlight: %d\n", ret);
 
 	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SCREEN_OFF);
 	if (ret)
@@ -157,6 +179,7 @@ static int yoga_slim7x_ec_suspend(struct device *dev)
 static int yoga_slim7x_ec_resume(struct device *dev)
 {
 	struct i2c_client *client = to_i2c_client(dev);
+	struct yoga_slim7x_ec *ec = i2c_get_clientdata(client);
 	int ret;
 
 	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SUSPEND_EXIT);
@@ -166,6 +189,14 @@ static int yoga_slim7x_ec_resume(struct device *dev)
 	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SCREEN_ON);
 	if (ret)
 		return ret;
+
+	/* Restore keyboard backlight state */
+	if (ec->saved_kbd_backlight) {
+		ret = i2c_smbus_write_byte_data(client, EC_BACKLIGHT_STATUS_REG,
+						 ec->saved_kbd_backlight);
+		if (ret)
+			dev_warn(dev, "Failed to restore keyboard backlight: %d\n", ret);
+	}
 
 	return 0;
 }
