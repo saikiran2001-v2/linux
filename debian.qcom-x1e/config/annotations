@@ -3763,7 +3763,7 @@ CONFIG_EC_ACER_ASPIRE1                          policy<{'arm64': 'm'}>
 CONFIG_EC_HUAWEI_GAOKUN                         policy<{'arm64': 'n'}>
 CONFIG_EC_LENOVO_THINKPAD_T14S                  policy<{'arm64': 'n'}>
 CONFIG_EC_LENOVO_YOGA_C630                      policy<{'arm64': 'm'}>
-CONFIG_EC_LENOVO_YOGA_SLIM7X                    policy<{'arm64': 'n'}>
+CONFIG_EC_LENOVO_YOGA_SLIM7X                    policy<{'arm64': 'm'}>
 CONFIG_EDAC                                     policy<{'arm64': 'y'}>
 CONFIG_EDAC_ALTERA                              policy<{'arm64': 'y'}>
 CONFIG_EDAC_ALTERA_ETHERNET                     policy<{'arm64': 'y'}>
