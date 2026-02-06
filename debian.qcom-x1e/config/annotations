@@ -2818,7 +2818,7 @@ CONFIG_CRYPTO_LIB_SHA512_ARCH                   policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_LIB_SM3                           policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_LIB_UTILS                         policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_LRW                               policy<{'arm64': 'm'}>
-CONFIG_CRYPTO_LZ4                               policy<{'arm64': 'm'}>
+CONFIG_CRYPTO_LZ4                               policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_LZ4HC                             policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_LZO                               policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_MANAGER                           policy<{'arm64': 'y'}>
@@ -13466,10 +13466,10 @@ CONFIG_ZRAM_BACKEND_LZ4                         policy<{'arm64': 'y'}>
 CONFIG_ZRAM_BACKEND_LZ4HC                       policy<{'arm64': 'y'}>
 CONFIG_ZRAM_BACKEND_LZO                         policy<{'arm64': 'y'}>
 CONFIG_ZRAM_BACKEND_ZSTD                        policy<{'arm64': 'y'}>
-CONFIG_ZRAM_DEF_COMP                            policy<{'arm64': '"lzo-rle"'}>
+CONFIG_ZRAM_DEF_COMP                            policy<{'arm64': '"lz4"'}>
 CONFIG_ZRAM_DEF_COMP_842                        policy<{'arm64': 'n'}>
 CONFIG_ZRAM_DEF_COMP_DEFLATE                    policy<{'arm64': 'n'}>
-CONFIG_ZRAM_DEF_COMP_LZ4                        policy<{'arm64': 'n'}>
+CONFIG_ZRAM_DEF_COMP_LZ4                        policy<{'arm64': 'y'}>
 CONFIG_ZRAM_DEF_COMP_LZ4HC                      policy<{'arm64': 'n'}>
 CONFIG_ZRAM_DEF_COMP_LZO                        policy<{'arm64': 'n'}>
 CONFIG_ZRAM_DEF_COMP_LZORLE                     policy<{'arm64': 'y'}>
