@@ -120,6 +120,8 @@ CONFIG_DEBUG_INFO                               note<'required for debug package
 CONFIG_DEBUG_INFO_SPLIT                         policy<{'arm64': 'n'}>
 CONFIG_DEBUG_INFO_SPLIT                         note<'LP: #1413664'>
 
+CONFIG_DEBUG_KERNEL                             policy<{'arm64': 'y'}>
+CONFIG_DEBUG_KERNEL                             note<'forced by CONFIG_EXPERT'>
 
 CONFIG_DEFAULT_MMAP_MIN_ADDR                    policy<{'arm64': '32768'}>
 CONFIG_DEFAULT_MMAP_MIN_ADDR                    note<'LP: #1531327'>
@@ -2930,12 +2932,10 @@ CONFIG_DEBUG_INFO_COMPRESSED_ZSTD               policy<{'arm64': 'n'}>
 CONFIG_DEBUG_INFO_DWARF4                        policy<{'arm64': 'n'}>
 CONFIG_DEBUG_INFO_DWARF5                        policy<{'arm64': 'y'}>
 CONFIG_DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT       policy<{'arm64': 'n'}>
-CONFIG_DEBUG_KERNEL                             policy<{'arm64': 'y'}>
-CONFIG_DEBUG_KERNEL                             note<'forced by CONFIG_EXPERT'>
-CONFIG_DEBUG_KERNEL_DC                          policy<{'arm64': 'n'}>
 CONFIG_DEBUG_INFO_NONE                          policy<{'arm64': 'n'}>
 CONFIG_DEBUG_INFO_REDUCED                       policy<{'arm64': 'n'}>
 CONFIG_DEBUG_IRQFLAGS                           policy<{'arm64': 'n'}>
+CONFIG_DEBUG_KERNEL_DC                          policy<{'arm64': 'n'}>
 CONFIG_DEBUG_KMEMLEAK                           policy<{'arm64': 'n'}>
 CONFIG_DEBUG_KOBJECT                            policy<{'arm64': 'n'}>
 CONFIG_DEBUG_LIST                               policy<{'arm64': 'n'}>
