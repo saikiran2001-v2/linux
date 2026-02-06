@@ -2057,6 +2057,12 @@ CONFIG_CLK_IMX93                                policy<{'arm64': 'm'}>
 CONFIG_CLK_IMX95_BLK_CTL                        policy<{'arm64': 'm'}>
 CONFIG_CLK_INTEL_SOCFPGA                        policy<{'arm64': 'y'}>
 CONFIG_CLK_INTEL_SOCFPGA64                      policy<{'arm64': 'y'}>
+CONFIG_CLK_KAANAPALI_CAMCC                      policy<{'arm64': 'n'}>
+CONFIG_CLK_KAANAPALI_DISPCC                     policy<{'arm64': 'n'}>
+CONFIG_CLK_KAANAPALI_GCC                        policy<{'arm64': 'n'}>
+CONFIG_CLK_KAANAPALI_GPUCC                      policy<{'arm64': 'n'}>
+CONFIG_CLK_KAANAPALI_TCSRCC                     policy<{'arm64': 'n'}>
+CONFIG_CLK_KAANAPALI_VIDEOCC                    policy<{'arm64': 'n'}>
 CONFIG_CLK_LS1028A_PLLDIG                       policy<{'arm64': 'm'}>
 CONFIG_CLK_MA35D1                               policy<{'arm64': 'y'}>
 CONFIG_CLK_OWL_S500                             policy<{'arm64': 'y'}>
@@ -10496,6 +10502,7 @@ CONFIG_SM_CAMCC_8250                            policy<{'arm64': 'm'}>
 CONFIG_SM_CAMCC_8450                            policy<{'arm64': 'm'}>
 CONFIG_SM_CAMCC_8550                            policy<{'arm64': 'm'}>
 CONFIG_SM_CAMCC_8650                            policy<{'arm64': 'm'}>
+CONFIG_SM_CAMCC_8750                            policy<{'arm64': 'n'}>
 CONFIG_SM_CAMCC_MILOS                           policy<{'arm64': 'n'}>
 CONFIG_SM_DISPCC_4450                           policy<{'arm64': 'n'}>
 CONFIG_SM_DISPCC_6115                           policy<{'arm64': 'm'}>
