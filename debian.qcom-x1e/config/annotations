@@ -6149,7 +6149,7 @@ CONFIG_LWTUNNEL                                 policy<{'arm64': 'y'}>
 CONFIG_LWTUNNEL_BPF                             policy<{'arm64': 'y'}>
 CONFIG_LXT_PHY                                  policy<{'arm64': 'm'}>
 CONFIG_LZ4HC_COMPRESS                           policy<{'arm64': 'm'}>
-CONFIG_LZ4_COMPRESS                             policy<{'arm64': 'm'}>
+CONFIG_LZ4_COMPRESS                             policy<{'arm64': 'y'}>
 CONFIG_LZ4_DECOMPRESS                           policy<{'arm64': 'y'}>
 CONFIG_LZO_COMPRESS                             policy<{'arm64': 'y'}>
 CONFIG_LZO_DECOMPRESS                           policy<{'arm64': 'y'}>
