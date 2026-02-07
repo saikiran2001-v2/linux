@@ -6,6 +6,7 @@
 
 #include <linux/msi.h>
 #include <linux/pci.h>
+#include <linux/pm_wakeup.h>
 #include <linux/firmware.h>
 
 #include "core.h"
@@ -643,7 +644,7 @@ void ath12k_mhi_stop(struct ath12k_pci *ab_pci, bool is_suspend)
 	 * device prepared for resume, otherwise ath12k_core_resume()
 	 * will timeout.
 	 */
-	if (is_suspend)
+	if (is_suspend && device_may_wakeup(ab_pci->ab->dev))
 		ath12k_mhi_set_state(ab_pci, ATH12K_MHI_POWER_OFF_KEEP_DEV);
 	else
 		ath12k_mhi_set_state(ab_pci, ATH12K_MHI_POWER_OFF);
