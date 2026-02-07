@@ -782,7 +782,7 @@ CONFIG_AMPERE_ERRATUM_AC03_CPU_38               policy<{'arm64': 'y'}>
 CONFIG_AMPERE_ERRATUM_AC04_CPU_23               policy<{'arm64': 'y'}>
 CONFIG_AMT                                      policy<{'arm64': 'm'}>
 CONFIG_ANDROID_BINDER_IPC                       policy<{'arm64': 'n'}>
-CONFIG_ANON_MIN_RATIO                           policy<{'arm64': '1'}>
+CONFIG_ANON_MIN_RATIO                           policy<{'arm64': '2'}>
 CONFIG_ANON_VMA_NAME                            policy<{'arm64': 'y'}>
 CONFIG_AOSONG_AGS02MA                           policy<{'arm64': 'm'}>
 CONFIG_APDS9160                                 policy<{'arm64': 'm'}>
@@ -2043,8 +2043,8 @@ CONFIG_CIFS_UPCALL                              policy<{'arm64': 'y'}>
 CONFIG_CIFS_XATTR                               policy<{'arm64': 'y'}>
 CONFIG_CLANG_SUPPORTS_DYNAMIC_FTRACE_WITH_ARGS  policy<{'arm64': 'y'}>
 CONFIG_CLANG_VERSION                            policy<{'arm64': '200108'}>
-CONFIG_CLEAN_LOW_RATIO                          policy<{'arm64': '15'}>
-CONFIG_CLEAN_MIN_RATIO                          policy<{'arm64': '4'}>
+CONFIG_CLEAN_LOW_RATIO                          policy<{'arm64': '12'}>
+CONFIG_CLEAN_MIN_RATIO                          policy<{'arm64': '3'}>
 CONFIG_CLKSRC_MMIO                              policy<{'arm64': 'y'}>
 CONFIG_CLKSRC_STM32_LP                          policy<{'arm64': 'y'}>
 CONFIG_CLK_ACTIONS                              policy<{'arm64': 'y'}>
