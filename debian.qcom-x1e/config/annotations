@@ -782,6 +782,7 @@ CONFIG_AMPERE_ERRATUM_AC03_CPU_38               policy<{'arm64': 'y'}>
 CONFIG_AMPERE_ERRATUM_AC04_CPU_23               policy<{'arm64': 'y'}>
 CONFIG_AMT                                      policy<{'arm64': 'm'}>
 CONFIG_ANDROID_BINDER_IPC                       policy<{'arm64': 'n'}>
+CONFIG_ANON_MIN_RATIO                           policy<{'arm64': '1'}>
 CONFIG_ANON_VMA_NAME                            policy<{'arm64': 'y'}>
 CONFIG_AOSONG_AGS02MA                           policy<{'arm64': 'm'}>
 CONFIG_APDS9160                                 policy<{'arm64': 'm'}>
@@ -1770,6 +1771,7 @@ CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'arm64': 'y'}>
 CONFIG_CACHEFILES_ONDEMAND                      policy<{'arm64': 'n'}>
 CONFIG_CACHEMAINT_FOR_HOTPLUG                   policy<{'arm64': 'n'}>
 CONFIG_CACHESTAT_SYSCALL                        policy<{'arm64': 'y'}>
+CONFIG_CACHY                                    policy<{'arm64': 'y'}>
 CONFIG_CADENCE_WATCHDOG                         policy<{'arm64': 'm'}>
 CONFIG_CAIF                                     policy<{'arm64': 'm'}>
 CONFIG_CAIF_DEBUG                               policy<{'arm64': 'n'}>
@@ -2041,6 +2043,8 @@ CONFIG_CIFS_UPCALL                              policy<{'arm64': 'y'}>
 CONFIG_CIFS_XATTR                               policy<{'arm64': 'y'}>
 CONFIG_CLANG_SUPPORTS_DYNAMIC_FTRACE_WITH_ARGS  policy<{'arm64': 'y'}>
 CONFIG_CLANG_VERSION                            policy<{'arm64': '200108'}>
+CONFIG_CLEAN_LOW_RATIO                          policy<{'arm64': '15'}>
+CONFIG_CLEAN_MIN_RATIO                          policy<{'arm64': '4'}>
 CONFIG_CLKSRC_MMIO                              policy<{'arm64': 'y'}>
 CONFIG_CLKSRC_STM32_LP                          policy<{'arm64': 'y'}>
 CONFIG_CLK_ACTIONS                              policy<{'arm64': 'y'}>
@@ -2510,7 +2514,7 @@ CONFIG_COMMON_CLK_ZYNQMP                        policy<{'arm64': 'y'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': 'm'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': 'm'}>
 CONFIG_COMPACTION                               policy<{'arm64': 'y'}>
-CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '1'}>
+CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0'}>
 CONFIG_COMPAT                                   policy<{'arm64': 'y'}>
 CONFIG_COMPAT_32BIT_TIME                        policy<{'arm64': 'y'}>
 CONFIG_COMPAT_ALIGNMENT_FIXUPS                  policy<{'arm64': 'n'}>
@@ -4916,6 +4920,9 @@ CONFIG_HZ                                       policy<{'arm64': '1000'}>
 CONFIG_HZ_100                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_250                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_300                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_500                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_600                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_750                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_PERIODIC                              policy<{'arm64': 'n'}>
 CONFIG_I2C                                      policy<{'arm64': 'y'}>
 CONFIG_I2CR_SCOM                                policy<{'arm64': 'm'}>
@@ -6139,6 +6146,7 @@ CONFIG_LTO                                      policy<{'arm64': 'y'}>
 CONFIG_LTO_CLANG                                policy<{'arm64': 'y'}>
 CONFIG_LTO_CLANG_FULL                           policy<{'arm64': 'n'}>
 CONFIG_LTO_CLANG_THIN                           policy<{'arm64': 'y'}>
+CONFIG_LTO_CLANG_THIN_DIST                      policy<{'arm64': 'n'}>
 CONFIG_LTO_NONE                                 policy<{'arm64': 'n'}>
 CONFIG_LTR390                                   policy<{'arm64': 'm'}>
 CONFIG_LTR501                                   policy<{'arm64': 'm'}>
@@ -6834,6 +6842,7 @@ CONFIG_MPTCP                                    policy<{'arm64': 'y'}>
 CONFIG_MPTCP_IPV6                               policy<{'arm64': 'y'}>
 CONFIG_MPU3050                                  policy<{'arm64': 'm'}>
 CONFIG_MPU3050_I2C                              policy<{'arm64': 'm'}>
+CONFIG_MQ_IOSCHED_ADIOS                         policy<{'arm64': 'm'}>
 CONFIG_MQ_IOSCHED_DEADLINE                      policy<{'arm64': 'y'}>
 CONFIG_MQ_IOSCHED_KYBER                         policy<{'arm64': 'm'}>
 CONFIG_MRP                                      policy<{'arm64': 'm'}>
@@ -12760,6 +12769,7 @@ CONFIG_V4L2_FWNODE                              policy<{'arm64': 'm'}>
 CONFIG_V4L2_H264                                policy<{'arm64': 'm'}>
 CONFIG_V4L2_ISP                                 policy<{'arm64': 'm'}>
 CONFIG_V4L2_JPEG_HELPER                         policy<{'arm64': 'm'}>
+CONFIG_V4L2_LOOPBACK                            policy<{'arm64': 'n'}>
 CONFIG_V4L2_MEM2MEM_DEV                         policy<{'arm64': 'm'}>
 CONFIG_V4L2_VP9                                 policy<{'arm64': 'm'}>
 CONFIG_V4L_MEM2MEM_DRIVERS                      policy<{'arm64': 'y'}>
