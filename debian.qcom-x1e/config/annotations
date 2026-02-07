@@ -8639,6 +8639,7 @@ CONFIG_PNP                                      policy<{'arm64': 'y'}>
 CONFIG_PNPACPI                                  policy<{'arm64': 'y'}>
 CONFIG_PNP_DEBUG_MESSAGES                       policy<{'arm64': 'y'}>
 CONFIG_POLARFIRE_SOC_SYSCONS                    policy<{'arm64': 'y'}>
+CONFIG_POLLY_CLANG                              policy<{'arm64': 'y'}>
 CONFIG_POLYNOMIAL                               policy<{'arm64': 'm'}>
 CONFIG_POSIX_AUX_CLOCKS                         policy<{'arm64': 'n'}>
 CONFIG_POSIX_CPU_TIMERS_TASK_WORK               policy<{'arm64': 'y'}>
