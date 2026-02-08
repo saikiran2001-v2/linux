@@ -1738,6 +1738,10 @@ static __maybe_unused int ath12k_pci_pm_suspend(struct device *dev)
 	struct ath12k_base *ab = dev_get_drvdata(dev);
 	int ret;
 
+	/* Disable wakeup if device doesn't support it to prevent spurious wakes */
+	if (!device_may_wakeup(dev))
+		device_set_wakeup_enable(dev, false);
+
 	ret = ath12k_core_suspend(ab);
 	if (ret)
 		ath12k_warn(ab, "failed to suspend core: %d\n", ret);
@@ -1749,6 +1753,10 @@ static __maybe_unused int ath12k_pci_pm_resume(struct device *dev)
 {
 	struct ath12k_base *ab = dev_get_drvdata(dev);
 	int ret;
+
+	/* Re-enable wakeup capability if it was disabled */
+	if (device_can_wakeup(dev))
+		device_set_wakeup_enable(dev, true);
 
 	ret = ath12k_core_resume(ab);
 	if (ret)
