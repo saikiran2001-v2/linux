@@ -1738,10 +1738,6 @@ static __maybe_unused int ath12k_pci_pm_suspend(struct device *dev)
 	struct ath12k_base *ab = dev_get_drvdata(dev);
 	int ret;
 
-	/* Disable wakeup if device doesn't support it to prevent spurious wakes */
-	if (!device_may_wakeup(dev))
-		device_set_wakeup_enable(dev, false);
-
 	ret = ath12k_core_suspend(ab);
 	if (ret)
 		ath12k_warn(ab, "failed to suspend core: %d\n", ret);
@@ -1754,10 +1750,6 @@ static __maybe_unused int ath12k_pci_pm_resume(struct device *dev)
 	struct ath12k_base *ab = dev_get_drvdata(dev);
 	int ret;
 
-	/* Re-enable wakeup capability if it was disabled */
-	if (device_can_wakeup(dev))
-		device_set_wakeup_enable(dev, true);
-
 	ret = ath12k_core_resume(ab);
 	if (ret)
 		ath12k_warn(ab, "failed to resume core: %d\n", ret);
@@ -1768,11 +1760,19 @@ static __maybe_unused int ath12k_pci_pm_resume(struct device *dev)
 static __maybe_unused int ath12k_pci_pm_suspend_late(struct device *dev)
 {
 	struct ath12k_base *ab = dev_get_drvdata(dev);
+	struct ath12k_pci *ab_pci = ath12k_pci_priv(ab);
 	int ret;
 
 	ret = ath12k_core_suspend_late(ab);
 	if (ret)
 		ath12k_warn(ab, "failed to late suspend core: %d\n", ret);
+
+	/* Disable PCI PME (Power Management Event) to prevent spurious wakeups
+	 * when system wakeup is disabled. This is done at hardware level after
+	 * MHI has been put in low power state.
+	 */
+	if (!device_may_wakeup(dev))
+		pci_pme_active(ab_pci->pdev, false);
 
 	return ret;
 }
@@ -1780,7 +1780,12 @@ static __maybe_unused int ath12k_pci_pm_suspend_late(struct device *dev)
 static __maybe_unused int ath12k_pci_pm_resume_early(struct device *dev)
 {
 	struct ath12k_base *ab = dev_get_drvdata(dev);
+	struct ath12k_pci *ab_pci = ath12k_pci_priv(ab);
 	int ret;
+
+	/* Re-enable PCI PME if it was disabled during suspend */
+	if (!device_may_wakeup(dev))
+		pci_pme_active(ab_pci->pdev, true);
 
 	ret = ath12k_core_resume_early(ab);
 	if (ret)
