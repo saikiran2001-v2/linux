@@ -2186,7 +2186,14 @@ static int msm_dp_ctrl_process_phy_test_request(struct msm_dp_ctrl_private *ctrl
 	if (ctrl->stream_clks_on) {
 		drm_dbg_dp(ctrl->drm_dev, "pixel clks already enabled\n");
 	} else {
-		ret = clk_prepare_enable(ctrl->pixel_clk);
+		int retries;
+
+		for (retries = 0; retries < 5; retries++) {
+			ret = clk_prepare_enable(ctrl->pixel_clk);
+			if (!ret)
+				break;
+			usleep_range(2000, 5000);
+		}
 		if (ret) {
 			DRM_ERROR("Failed to start pixel clocks. ret=%d\n", ret);
 			return ret;
@@ -2508,9 +2515,27 @@ int msm_dp_ctrl_on_stream(struct msm_dp_ctrl *msm_dp_ctrl, bool force_link_train
 	if (ctrl->stream_clks_on) {
 		drm_dbg_dp(ctrl->drm_dev, "pixel clks already enabled\n");
 	} else {
-		ret = clk_prepare_enable(ctrl->pixel_clk);
+		int retries;
+
+		/*
+		 * After deep sleep (S3), the display clock controller GDSC
+		 * and parent PLLs may not have fully stabilized by the time
+		 * the DRM atomic restore runs. The pixel clock branch gate
+		 * can be stuck at 'off' temporarily, returning -EBUSY.
+		 * Retry with delays to allow hardware to settle.
+		 */
+		for (retries = 0; retries < 5; retries++) {
+			ret = clk_prepare_enable(ctrl->pixel_clk);
+			if (!ret)
+				break;
+			drm_dbg_dp(ctrl->drm_dev,
+				   "pixel clk enable retry %d/%d (ret=%d)\n",
+				   retries + 1, 5, ret);
+			usleep_range(2000, 5000);
+		}
 		if (ret) {
-			DRM_ERROR("Failed to start pixel clocks. ret=%d\n", ret);
+			DRM_ERROR("Failed to start pixel clocks after %d retries. ret=%d\n",
+				  retries, ret);
 			goto end;
 		}
 		ctrl->stream_clks_on = true;

@@ -198,7 +198,17 @@ struct dpu_encoder_phys {
 	wait_queue_head_t pending_kickoff_wq;
 	unsigned int irq[INTR_IDX_MAX];
 	bool has_intf_te;
+	u32 last_vblank_timeout_val;
+	int vblank_timeout_count;
 };
+
+/**
+ * dpu_encoder_trigger_wedge_recovery - Trigger encoder wedge recovery
+ * @drm_enc: Pointer to drm encoder
+ *
+ * Called by physical encoders when hardware wedge is detected.
+ */
+void dpu_encoder_trigger_wedge_recovery(struct drm_encoder *drm_enc);
 
 static inline int dpu_encoder_phys_inc_pending(struct dpu_encoder_phys *phys)
 {
