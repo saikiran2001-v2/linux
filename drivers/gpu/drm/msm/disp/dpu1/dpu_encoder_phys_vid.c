@@ -533,6 +533,7 @@ static int dpu_encoder_phys_vid_wait_for_commit_done(
 		struct dpu_encoder_phys *phys_enc)
 {
 	struct dpu_hw_ctl *hw_ctl = phys_enc->hw_ctl;
+	u32 flush_register;
 	int ret;
 
 	if (!hw_ctl)
@@ -542,7 +543,40 @@ static int dpu_encoder_phys_vid_wait_for_commit_done(
 		(hw_ctl->ops.get_flush_register(hw_ctl) == 0),
 		msecs_to_jiffies(50));
 	if (ret <= 0) {
-		DPU_ERROR("vblank timeout: %x\n", hw_ctl->ops.get_flush_register(hw_ctl));
+		flush_register = hw_ctl->ops.get_flush_register(hw_ctl);
+		DPU_ERROR("vblank timeout: %x\n", flush_register);
+
+		/*
+		 * Wedge detection: if the vblank timeout value is the same
+		 * multiple times in a row, the hardware is likely wedged
+		 */
+		if (flush_register != 0) {
+			if (phys_enc->last_vblank_timeout_val == flush_register) {
+				phys_enc->vblank_timeout_count++;
+				
+				if (phys_enc->vblank_timeout_count >= 3) {
+					DRM_ERROR("Encoder wedge detected: vblank value frozen at %x for %d iterations\n",
+						  flush_register, phys_enc->vblank_timeout_count);
+					
+					/*
+					 * Flag wedge state immediately so atomic_disable knows
+					 * to skip hardware access. This is the fast-path detection.
+					 * Use helper function to safely trigger recovery without
+					 * exposing dpu_encoder_virt internals.
+					 */
+					dpu_encoder_trigger_wedge_recovery(phys_enc->parent);
+				}
+			} else {
+				/* Value changed, reset counter */
+				phys_enc->last_vblank_timeout_val = flush_register;
+				phys_enc->vblank_timeout_count = 1;
+			}
+		} else {
+			/* Flush completed (0 value), reset tracking */
+			phys_enc->last_vblank_timeout_val = 0;
+			phys_enc->vblank_timeout_count = 0;
+		}
+
 		return -ETIMEDOUT;
 	}
 
