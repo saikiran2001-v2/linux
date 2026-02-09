@@ -6598,6 +6598,7 @@ CONFIG_MIGRATION                                policy<{'arm64': 'y'}>
 CONFIG_MII                                      policy<{'arm64': 'y'}>
 CONFIG_MINIX_FS                                 policy<{'arm64': 'm'}>
 CONFIG_MINIX_SUBPARTITION                       policy<{'arm64': 'y'}>
+CONFIG_MIN_BASE_SLICE_NS                        policy<{'arm64': '2000000'}>
 CONFIG_MIN_HEAP                                 policy<{'arm64': 'y'}>
 CONFIG_MIPI_I3C_HCI                             policy<{'arm64': 'm'}>
 CONFIG_MIPI_I3C_HCI_PCI                         policy<{'arm64': 'n'}>
@@ -9799,6 +9800,7 @@ CONFIG_SCD4X                                    policy<{'arm64': 'm'}>
 CONFIG_SCF_TORTURE_TEST                         policy<{'arm64': 'n'}>
 CONFIG_SCHEDSTATS                               policy<{'arm64': 'y'}>
 CONFIG_SCHED_AUTOGROUP                          policy<{'arm64': 'y'}>
+CONFIG_SCHED_BORE                               policy<{'arm64': 'y'}>
 CONFIG_SCHED_CLUSTER                            policy<{'arm64': 'y'}>
 CONFIG_SCHED_CORE                               policy<{'arm64': 'y'}>
 CONFIG_SCHED_HRTICK                             policy<{'arm64': 'y'}>
