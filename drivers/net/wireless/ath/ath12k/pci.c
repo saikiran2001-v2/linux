@@ -1760,21 +1760,11 @@ static __maybe_unused int ath12k_pci_pm_resume(struct device *dev)
 static __maybe_unused int ath12k_pci_pm_suspend_late(struct device *dev)
 {
 	struct ath12k_base *ab = dev_get_drvdata(dev);
-	struct ath12k_pci *ab_pci = ath12k_pci_priv(ab);
 	int ret;
 
 	ret = ath12k_core_suspend_late(ab);
 	if (ret)
 		ath12k_warn(ab, "failed to late suspend core: %d\n", ret);
-
-	/* Prevent spurious wakeups by disabling PCI wakeup from D3 state and
-	 * PME when system wakeup is disabled. This is done at hardware level
-	 * after MHI has been put in low power state.
-	 */
-	if (!device_may_wakeup(dev)) {
-		pci_wake_from_d3(ab_pci->pdev, false);
-		pci_pme_active(ab_pci->pdev, false);
-	}
 
 	return ret;
 }
@@ -1782,14 +1772,7 @@ static __maybe_unused int ath12k_pci_pm_suspend_late(struct device *dev)
 static __maybe_unused int ath12k_pci_pm_resume_early(struct device *dev)
 {
 	struct ath12k_base *ab = dev_get_drvdata(dev);
-	struct ath12k_pci *ab_pci = ath12k_pci_priv(ab);
 	int ret;
-
-	/* Re-enable PCI wakeup and PME if they were disabled during suspend */
-	if (!device_may_wakeup(dev)) {
-		pci_wake_from_d3(ab_pci->pdev, true);
-		pci_pme_active(ab_pci->pdev, true);
-	}
 
 	ret = ath12k_core_resume_early(ab);
 	if (ret)
