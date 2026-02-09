@@ -9808,6 +9808,8 @@ CONFIG_SCHED_HW_PRESSURE                        policy<{'arm64': 'y'}>
 CONFIG_SCHED_INFO                               policy<{'arm64': 'y'}>
 CONFIG_SCHED_MC                                 policy<{'arm64': 'y'}>
 CONFIG_SCHED_MM_CID                             policy<{'arm64': 'y'}>
+CONFIG_SCHED_POC_SELECTOR                       policy<{'arm64': 'y'}>
+CONFIG_SCHED_POC_SELECTOR_DEBUG                 policy<{'arm64': 'n'}>
 CONFIG_SCHED_PROXY_EXEC                         policy<{'arm64': 'n'}>
 CONFIG_SCHED_SMT                                policy<{'arm64': 'y'}>
 CONFIG_SCHED_STACK_END_CHECK                    policy<{'arm64': 'y'}>
