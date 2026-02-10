@@ -1263,7 +1263,6 @@ CONFIG_ATH10K_TRACING                           policy<{'arm64': 'y'}>
 CONFIG_ATH10K_USB                               policy<{'arm64': 'm'}>
 CONFIG_ATH11K                                   policy<{'arm64': 'm'}>
 CONFIG_ATH11K_AHB                               policy<{'arm64': 'm'}>
-CONFIG_ATH11K_CFR                               policy<{'arm64': 'n'}>
 CONFIG_ATH11K_DEBUG                             policy<{'arm64': 'n'}>
 CONFIG_ATH11K_DEBUGFS                           policy<{'arm64': 'y'}>
 CONFIG_ATH11K_PCI                               policy<{'arm64': 'm'}>
@@ -2059,12 +2058,6 @@ CONFIG_CLK_IMX93                                policy<{'arm64': 'm'}>
 CONFIG_CLK_IMX95_BLK_CTL                        policy<{'arm64': 'm'}>
 CONFIG_CLK_INTEL_SOCFPGA                        policy<{'arm64': 'y'}>
 CONFIG_CLK_INTEL_SOCFPGA64                      policy<{'arm64': 'y'}>
-CONFIG_CLK_KAANAPALI_CAMCC                      policy<{'arm64': 'n'}>
-CONFIG_CLK_KAANAPALI_DISPCC                     policy<{'arm64': 'n'}>
-CONFIG_CLK_KAANAPALI_GCC                        policy<{'arm64': 'n'}>
-CONFIG_CLK_KAANAPALI_GPUCC                      policy<{'arm64': 'n'}>
-CONFIG_CLK_KAANAPALI_TCSRCC                     policy<{'arm64': 'n'}>
-CONFIG_CLK_KAANAPALI_VIDEOCC                    policy<{'arm64': 'n'}>
 CONFIG_CLK_LS1028A_PLLDIG                       policy<{'arm64': 'm'}>
 CONFIG_CLK_MA35D1                               policy<{'arm64': 'y'}>
 CONFIG_CLK_OWL_S500                             policy<{'arm64': 'y'}>
@@ -3101,6 +3094,7 @@ CONFIG_DM_VERITY_VERIFY_ROOTHASH_SIG_SECONDARY_KEYRING policy<{'arm64': 'y'}>
 CONFIG_DM_WRITECACHE                            policy<{'arm64': 'm'}>
 CONFIG_DM_ZERO                                  policy<{'arm64': 'm'}>
 CONFIG_DM_ZONED                                 policy<{'arm64': 'm'}>
+CONFIG_DNET                                     policy<{'arm64': 'n'}>
 CONFIG_DNOTIFY                                  policy<{'arm64': 'y'}>
 CONFIG_DNS_RESOLVER                             policy<{'arm64': 'y'}>
 CONFIG_DP83640_PHY                              policy<{'arm64': 'm'}>
@@ -3730,7 +3724,6 @@ CONFIG_DWMAC_INTEL_PLAT                         policy<{'arm64': 'm'}>
 CONFIG_DWMAC_IPQ806X                            policy<{'arm64': 'm'}>
 CONFIG_DWMAC_MEDIATEK                           policy<{'arm64': 'm'}>
 CONFIG_DWMAC_MESON                              policy<{'arm64': 'm'}>
-CONFIG_DWMAC_MOTORCOMM                          policy<{'arm64': 'n'}>
 CONFIG_DWMAC_QCOM_ETHQOS                        policy<{'arm64': 'm'}>
 CONFIG_DWMAC_RENESAS_GBETH                      policy<{'arm64': 'm'}>
 CONFIG_DWMAC_ROCKCHIP                           policy<{'arm64': 'm'}>
@@ -3852,6 +3845,7 @@ CONFIG_EROFS_FS                                 policy<{'arm64': 'm'}>
 CONFIG_EROFS_FS_BACKED_BY_FILE                  policy<{'arm64': 'y'}>
 CONFIG_EROFS_FS_DEBUG                           policy<{'arm64': 'n'}>
 CONFIG_EROFS_FS_ONDEMAND                        policy<{'arm64': 'n'}>
+CONFIG_EROFS_FS_PAGE_CACHE_SHARE                policy<{'arm64': 'n'}>
 CONFIG_EROFS_FS_PCPU_KTHREAD                    policy<{'arm64': 'y'}>
 CONFIG_EROFS_FS_PCPU_KTHREAD_HIPRI              policy<{'arm64': 'n'}>
 CONFIG_EROFS_FS_POSIX_ACL                       policy<{'arm64': 'y'}>
@@ -4804,6 +4798,7 @@ CONFIG_HIGH_RES_TIMERS                          policy<{'arm64': 'y'}>
 CONFIG_HINIC                                    policy<{'arm64': 'm'}>
 CONFIG_HINIC3                                   policy<{'arm64': 'n'}>
 CONFIG_HIP04_ETH                                policy<{'arm64': 'm'}>
+CONFIG_HIPPI                                    policy<{'arm64': 'n'}>
 CONFIG_HISILICON_ERRATUM_161010101              policy<{'arm64': 'y'}>
 CONFIG_HISILICON_ERRATUM_161600802              policy<{'arm64': 'y'}>
 CONFIG_HISILICON_ERRATUM_162100801              policy<{'arm64': 'y'}>
@@ -5475,6 +5470,7 @@ CONFIG_IOSCHED_BFQ                              policy<{'arm64': 'm'}>
 CONFIG_IOSM                                     policy<{'arm64': 'm'}>
 CONFIG_IO_STRICT_DEVMEM                         policy<{'arm64': 'n'}>
 CONFIG_IO_URING                                 policy<{'arm64': 'y'}>
+CONFIG_IO_URING_BPF                             policy<{'arm64': 'y'}>
 CONFIG_IO_URING_MOCK_FILE                       policy<{'arm64': 'n'}>
 CONFIG_IO_URING_ZCRX                            policy<{'arm64': 'y'}>
 CONFIG_IO_WQ                                    policy<{'arm64': 'y'}>
@@ -7465,6 +7461,7 @@ CONFIG_NET_VENDOR_MICROSOFT                     policy<{'arm64': 'y'}>
 CONFIG_NET_VENDOR_MUCSE                         policy<{'arm64': 'y'}>
 CONFIG_NET_VENDOR_MYRI                          policy<{'arm64': 'y'}>
 CONFIG_NET_VENDOR_NATSEMI                       policy<{'arm64': 'y'}>
+CONFIG_NET_VENDOR_NETERION                      policy<{'arm64': 'y'}>
 CONFIG_NET_VENDOR_NETRONOME                     policy<{'arm64': 'y'}>
 CONFIG_NET_VENDOR_NI                            policy<{'arm64': 'y'}>
 CONFIG_NET_VENDOR_NVIDIA                        policy<{'arm64': 'y'}>
@@ -8236,7 +8233,6 @@ CONFIG_PHY_CADENCE_SALVO                        policy<{'arm64': 'm'}>
 CONFIG_PHY_CADENCE_SIERRA                       policy<{'arm64': 'm'}>
 CONFIG_PHY_CADENCE_TORRENT                      policy<{'arm64': 'm'}>
 CONFIG_PHY_CAN_TRANSCEIVER                      policy<{'arm64': 'm'}>
-CONFIG_PHY_COMMON_PROPS                         policy<{'arm64': 'y'}>
 CONFIG_PHY_CPCAP_USB                            policy<{'arm64': 'm'}>
 CONFIG_PHY_FSL_IMX8MQ_USB                       policy<{'arm64': 'm'}>
 CONFIG_PHY_FSL_IMX8M_PCIE                       policy<{'arm64': 'm'}>
@@ -8630,6 +8626,7 @@ CONFIG_PNP                                      policy<{'arm64': 'y'}>
 CONFIG_PNPACPI                                  policy<{'arm64': 'y'}>
 CONFIG_PNP_DEBUG_MESSAGES                       policy<{'arm64': 'y'}>
 CONFIG_POLARFIRE_SOC_SYSCONS                    policy<{'arm64': 'y'}>
+CONFIG_POLLY_CLANG                              policy<{'arm64': 'y'}>
 CONFIG_POLYNOMIAL                               policy<{'arm64': 'm'}>
 CONFIG_POSIX_AUX_CLOCKS                         policy<{'arm64': 'n'}>
 CONFIG_POSIX_CPU_TIMERS_TASK_WORK               policy<{'arm64': 'y'}>
@@ -9721,6 +9718,7 @@ CONFIG_RZT2H_ADC                                policy<{'arm64': 'n'}>
 CONFIG_RZ_DMAC                                  policy<{'arm64': 'm'}>
 CONFIG_RZ_MTU3                                  policy<{'arm64': 'y'}>
 CONFIG_RZ_MTU3_CNT                              policy<{'arm64': 'm'}>
+CONFIG_S2IO                                     policy<{'arm64': 'n'}>
 CONFIG_S32G_WDT                                 policy<{'arm64': 'n'}>
 CONFIG_SAMPLES                                  policy<{'arm64': 'y'}>
 CONFIG_SAMPLE_AUXDISPLAY                        policy<{'arm64': 'n'}>
@@ -10502,7 +10500,6 @@ CONFIG_SM_CAMCC_8250                            policy<{'arm64': 'm'}>
 CONFIG_SM_CAMCC_8450                            policy<{'arm64': 'm'}>
 CONFIG_SM_CAMCC_8550                            policy<{'arm64': 'm'}>
 CONFIG_SM_CAMCC_8650                            policy<{'arm64': 'm'}>
-CONFIG_SM_CAMCC_8750                            policy<{'arm64': 'n'}>
 CONFIG_SM_CAMCC_MILOS                           policy<{'arm64': 'n'}>
 CONFIG_SM_DISPCC_4450                           policy<{'arm64': 'n'}>
 CONFIG_SM_DISPCC_6115                           policy<{'arm64': 'm'}>
