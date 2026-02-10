@@ -7452,6 +7452,10 @@ static int wake_affine(struct sched_domain *sd, struct task_struct *p,
 	return target;
 }
 
+#ifdef CONFIG_SCHED_POC_SELECTOR
+#include "poc_selector.c"
+#endif
+
 static struct sched_group *
 sched_balance_find_dst_group(struct sched_domain *sd, struct task_struct *p, int this_cpu);
 
@@ -7471,6 +7475,14 @@ sched_balance_find_dst_group_cpu(struct sched_group *group, struct task_struct *
 	/* Check if we have any choice: */
 	if (group->group_weight == 1)
 		return cpumask_first(sched_group_span(group));
+
+#ifdef CONFIG_SCHED_POC_SELECTOR
+	/* POC fast path: O(1) idle CPU lookup for LLC-internal groups */
+	i = poc_find_idle_cpu_in_group(
+		this_cpu, sched_group_span(group), p->cpus_ptr);
+	if (i >= 0)
+		return i;
+#endif
 
 	/* Traverse only the allowed CPUs */
 	for_each_cpu_and(i, sched_group_span(group), p->cpus_ptr) {
@@ -7948,9 +7960,38 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
 	if (!sd)
 		return target;
 
-	if (sched_smt_active()) {
+	if (sched_smt_active())
 		has_idle_core = test_idle_cores(target);
 
+#ifdef CONFIG_SCHED_POC_SELECTOR
+	{
+		struct sched_domain_shared *sd_share;
+
+		sd_share = rcu_dereference(per_cpu(sd_llc_shared, target));
+		if (sd_share &&
+		    static_branch_likely(&sched_poc_enabled) &&
+		    !sched_asym_cpucap_active()) {
+			int poc_cpu;
+
+			prefetch(&sd_share->poc_idle_cpus);
+
+			if (unlikely(!sd_share->poc_fast_eligible))
+				goto idle_cpu_fallbacks;
+
+			poc_cpu = select_idle_cpu_poc(has_idle_core, target,
+							  sd_share, p->cpus_ptr);
+			if (poc_cpu >= 0) {
+				POC_DBG_INC_HIT();
+				POC_DBG_INC_SELECTED(poc_cpu);
+				return poc_cpu;
+			}
+			POC_DBG_INC_FALLTHROUGH();
+			goto idle_cpu_fallbacks;
+		}
+	}
+#endif
+
+	if (sched_smt_active()) {
 		if (!has_idle_core && cpus_share_cache(prev, target)) {
 			i = select_idle_smt(p, sd, prev);
 			if ((unsigned int)i < nr_cpumask_bits)
@@ -7962,6 +8003,9 @@ static int select_idle_sibling(struct task_struct *p, int prev, int target)
 	if ((unsigned)i < nr_cpumask_bits)
 		return i;
 
+#ifdef CONFIG_SCHED_POC_SELECTOR
+idle_cpu_fallbacks:
+#endif
 	/*
 	 * For cluster machines which have lower sharing cache like L2 or
 	 * LLC Tag, we tend to find an idle CPU in the target's cluster

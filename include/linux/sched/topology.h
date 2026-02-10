@@ -66,8 +66,31 @@ struct sched_group;
 struct sched_domain_shared {
 	atomic_t	ref;
 	atomic_t	nr_busy_cpus;
-	int		has_idle_cores;
-	int		nr_idle_scan;
+	int			has_idle_cores;
+	int			nr_idle_scan;
+#ifdef CONFIG_SCHED_POC_SELECTOR
+	/*
+	 * POC Selector: per-LLC atomic64 idle masks (cake inspired)
+	 *
+	 * Supports up to 64 CPUs per LLC (single word).
+	 * LLCs with 65+ CPUs fall through to CFS standard path.
+	 *
+	 * Cacheline-aligned: LOCK-prefixed writes to these bitmaps on
+	 * every idle transition must not invalidate the cache line
+	 * containing nr_busy_cpus / has_idle_cores / nr_idle_scan.
+	 */
+	atomic64_t	poc_idle_cpus  ____cacheline_aligned;
+	atomic64_t	poc_idle_cores;		/* physical core idle mask */
+	int			poc_cpu_base;		/* smallest CPU ID in this LLC */
+	u8			poc_affinity_shift;	/* bit shift for cpumask alignment */
+	u8			poc_cluster_shift;	/* log2(cluster_size) in POC bit space */
+	bool		poc_fast_eligible;	/* true when LLC CPU count <= 64 */
+	bool		poc_cluster_valid;	/* true when shift-based cluster mask works */
+	u64			poc_cluster_mask[64];	/* pre-computed cluster masks */
+#ifdef CONFIG_SCHED_SMT
+	u64			poc_smt_siblings[64];	/* pre-computed SMT sibling masks */
+#endif /* CONFIG_SCHED_SMT */
+#endif /* CONFIG_SCHED_POC_SELECTOR */
 };
 
 struct sched_domain {
