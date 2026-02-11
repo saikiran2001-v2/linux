@@ -1350,6 +1350,21 @@ static void dpu_encoder_virt_atomic_enable(struct drm_encoder *drm_enc,
 	struct drm_display_mode *cur_mode = NULL;
 
 	dpu_enc = to_dpu_encoder_virt(drm_enc);
+
+	/* Check if encoder is wedged before attempting enable */
+	if (dpu_enc->is_wedged) {
+		DRM_WARN("Encoder %d is wedged, waiting for recovery before enable\n",
+			 drm_enc->base.id);
+		
+		/* Cancel and flush any pending recovery work to complete it synchronously */
+		cancel_work_sync(&dpu_enc->recovery_work);
+		
+		/* Force clear wedge state - we're doing a full enable which will reset hardware */
+		dpu_enc->is_wedged = false;
+		DRM_INFO("Encoder %d wedge cleared, proceeding with enable\n",
+			 drm_enc->base.id);
+	}
+
 	dpu_enc->dsc = dpu_encoder_get_dsc_config(drm_enc);
 
 	atomic_set(&dpu_enc->frame_done_timeout_cnt, 0);
