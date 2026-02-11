@@ -1350,6 +1350,21 @@ static void dpu_encoder_virt_atomic_enable(struct drm_encoder *drm_enc,
 	struct drm_display_mode *cur_mode = NULL;
 
 	dpu_enc = to_dpu_encoder_virt(drm_enc);
+
+	/* Check if encoder is wedged before attempting enable */
+	if (dpu_enc->is_wedged) {
+		DRM_WARN("Encoder %d is wedged, waiting for recovery before enable\n",
+			 drm_enc->base.id);
+		
+		/* Cancel and flush any pending recovery work to complete it synchronously */
+		cancel_work_sync(&dpu_enc->recovery_work);
+		
+		/* Force clear wedge state - we're doing a full enable which will reset hardware */
+		dpu_enc->is_wedged = false;
+		DRM_INFO("Encoder %d wedge cleared, proceeding with enable\n",
+			 drm_enc->base.id);
+	}
+
 	dpu_enc->dsc = dpu_encoder_get_dsc_config(drm_enc);
 
 	atomic_set(&dpu_enc->frame_done_timeout_cnt, 0);
@@ -1873,6 +1888,9 @@ void dpu_encoder_trigger_wedge_recovery(struct drm_encoder *drm_enc)
 		return;
 
 	dpu_enc = to_dpu_encoder_virt(drm_enc);
+
+	if (!dpu_enc->wedge_detection_enabled)
+		return;
 
 	if (!dpu_enc->is_wedged) {
 		dpu_enc->is_wedged = true;
@@ -2930,7 +2948,7 @@ struct drm_encoder *dpu_encoder_init(struct drm_device *dev,
 	atomic_set(&dpu_enc->frame_done_timeout_ms, 0);
 	atomic_set(&dpu_enc->frame_done_timeout_cnt, 0);
 	atomic_set(&dpu_enc->consecutive_timeout_count, 0);
-	dpu_enc->wedge_detection_enabled = true;
+	dpu_enc->wedge_detection_enabled = false;
 	dpu_enc->snapshot_captured = false;
 	INIT_WORK(&dpu_enc->recovery_work, dpu_encoder_recovery_worker);
 	timer_setup(&dpu_enc->frame_done_timer,
