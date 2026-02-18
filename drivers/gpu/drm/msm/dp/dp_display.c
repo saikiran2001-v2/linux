@@ -1654,6 +1654,15 @@ void msm_dp_bridge_atomic_enable(struct drm_bridge *drm_bridge,
 
 	msm_dp_display_enable(msm_dp_display, force_link_train);
 
+	if (!dp->power_on) {
+		DRM_ERROR("DP display enable failed, aborting stream start\n");
+		if (hpd_state == ST_DISPLAY_OFF)
+			msm_dp_display_host_phy_exit(msm_dp_display);
+		msm_dp_display->hpd_state = ST_DISPLAY_OFF;
+		mutex_unlock(&msm_dp_display->event_mutex);
+		return;
+	}
+
 	rc = msm_dp_display_post_enable(dp);
 	if (rc) {
 		DRM_ERROR("DP display post enable failed, rc=%d\n", rc);
@@ -1712,7 +1721,12 @@ void msm_dp_bridge_atomic_post_disable(struct drm_bridge *drm_bridge,
 		DRM_WARN("encoder wedged, skipping DP hardware disable\n");
 		mutex_lock(&msm_dp_display->event_mutex);
 		dp->power_on = false;
+		dp->link_ready = false;
+		msm_dp_display->phy_initialized = false;
 		msm_dp_display->hpd_state = ST_DISCONNECTED;
+		/* Flush stale HPD events so reconnection starts clean */
+		msm_dp_display->event_gndx = msm_dp_display->event_pndx;
+		msm_dp_display_handle_plugged_change(dp, false);
 		pm_runtime_put_sync(&dp->pdev->dev);
 		mutex_unlock(&msm_dp_display->event_mutex);
 		return;
