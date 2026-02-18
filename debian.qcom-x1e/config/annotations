@@ -9698,7 +9698,7 @@ CONFIG_RUSTC_HAS_SPAN_FILE                      policy<{'arm64': 'y'}>
 CONFIG_RUSTC_HAS_UNNECESSARY_TRANSMUTES         policy<{'arm64': 'y'}>
 CONFIG_RUSTC_LLVM_VERSION                       policy<{'arm64': '210108'}>
 CONFIG_RUSTC_SUPPORTS_ARM64                     policy<{'arm64': 'y'}>
-CONFIG_RUSTC_VERSION                            policy<{'arm64': '109300'}>
+CONFIG_RUSTC_VERSION                            policy<{'arm64': '109301'}>
 CONFIG_RUST_IS_AVAILABLE                        policy<{'arm64': 'y'}>
 CONFIG_RV                                       policy<{'arm64': 'y'}>
 CONFIG_RVU_ESWITCH                              policy<{'arm64': 'm'}>
