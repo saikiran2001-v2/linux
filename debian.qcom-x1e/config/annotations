@@ -13303,7 +13303,6 @@ CONFIG_W1_SLAVE_THERM                           policy<{'arm64': 'm'}>
 CONFIG_WAN                                      policy<{'arm64': 'y'}>
 CONFIG_WANT_DEV_COREDUMP                        policy<{'arm64': 'y'}>
 CONFIG_WANXL                                    policy<{'arm64': 'm'}>
-CONFIG_WARN_ALL_UNSEEDED_RANDOM                 policy<{'arm64': 'n'}>
 CONFIG_WATCHDOG                                 policy<{'arm64': 'y'}>
 CONFIG_WATCHDOG_CORE                            policy<{'arm64': 'y'}>
 CONFIG_WATCHDOG_HANDLE_BOOT_ENABLED             policy<{'arm64': 'y'}>
