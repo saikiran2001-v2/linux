@@ -1775,7 +1775,6 @@ CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'arm64': 'y'}>
 CONFIG_CACHEFILES_ONDEMAND                      policy<{'arm64': 'n'}>
 CONFIG_CACHEMAINT_FOR_HOTPLUG                   policy<{'arm64': 'n'}>
 CONFIG_CACHESTAT_SYSCALL                        policy<{'arm64': 'y'}>
-CONFIG_CACHY                                    policy<{'arm64': 'y'}>
 CONFIG_CADENCE_WATCHDOG                         policy<{'arm64': 'm'}>
 CONFIG_CAIF                                     policy<{'arm64': 'm'}>
 CONFIG_CAIF_DEBUG                               policy<{'arm64': 'n'}>
@@ -2519,7 +2518,7 @@ CONFIG_COMMON_CLK_ZYNQMP                        policy<{'arm64': 'y'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': 'm'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': 'm'}>
 CONFIG_COMPACTION                               policy<{'arm64': 'y'}>
-CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0'}>
+CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '1'}>
 CONFIG_COMPAT                                   policy<{'arm64': 'y'}>
 CONFIG_COMPAT_32BIT_TIME                        policy<{'arm64': 'y'}>
 CONFIG_COMPAT_ALIGNMENT_FIXUPS                  policy<{'arm64': 'n'}>
@@ -4937,9 +4936,6 @@ CONFIG_HZ                                       policy<{'arm64': '1000'}>
 CONFIG_HZ_100                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_250                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_300                                   policy<{'arm64': 'n'}>
-CONFIG_HZ_500                                   policy<{'arm64': 'n'}>
-CONFIG_HZ_600                                   policy<{'arm64': 'n'}>
-CONFIG_HZ_750                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_PERIODIC                              policy<{'arm64': 'n'}>
 CONFIG_I2C                                      policy<{'arm64': 'y'}>
 CONFIG_I2CR_SCOM                                policy<{'arm64': 'm'}>
