@@ -1775,6 +1775,7 @@ CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'arm64': 'y'}>
 CONFIG_CACHEFILES_ONDEMAND                      policy<{'arm64': 'n'}>
 CONFIG_CACHEMAINT_FOR_HOTPLUG                   policy<{'arm64': 'n'}>
 CONFIG_CACHESTAT_SYSCALL                        policy<{'arm64': 'y'}>
+CONFIG_CACHY                                    policy<{'arm64': 'y'}>
 CONFIG_CADENCE_WATCHDOG                         policy<{'arm64': 'm'}>
 CONFIG_CAIF                                     policy<{'arm64': 'm'}>
 CONFIG_CAIF_DEBUG                               policy<{'arm64': 'n'}>
@@ -1882,6 +1883,7 @@ CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO                policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_AUTO_VAR_INIT_ZERO_BARE           policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_BRANCH_PROT_PAC_RET               policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_BRANCH_PROT_PAC_RET_BTI           policy<{'arm64': 'y'}>
+CONFIG_CC_HAS_BROKEN_COUNTED_BY_REF             policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_COUNTED_BY                        policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_INT128                            policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_KASAN_GENERIC                     policy<{'arm64': 'y'}>
@@ -2517,7 +2519,7 @@ CONFIG_COMMON_CLK_ZYNQMP                        policy<{'arm64': 'y'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': 'm'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': 'm'}>
 CONFIG_COMPACTION                               policy<{'arm64': 'y'}>
-CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '1'}>
+CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0'}>
 CONFIG_COMPAT                                   policy<{'arm64': 'y'}>
 CONFIG_COMPAT_32BIT_TIME                        policy<{'arm64': 'y'}>
 CONFIG_COMPAT_ALIGNMENT_FIXUPS                  policy<{'arm64': 'n'}>
@@ -4935,6 +4937,9 @@ CONFIG_HZ                                       policy<{'arm64': '1000'}>
 CONFIG_HZ_100                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_250                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_300                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_500                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_600                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_750                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_PERIODIC                              policy<{'arm64': 'n'}>
 CONFIG_I2C                                      policy<{'arm64': 'y'}>
 CONFIG_I2CR_SCOM                                policy<{'arm64': 'm'}>
@@ -8665,6 +8670,7 @@ CONFIG_PNPACPI                                  policy<{'arm64': 'y'}>
 CONFIG_PNP_DEBUG_MESSAGES                       policy<{'arm64': 'y'}>
 CONFIG_POLARFIRE_SOC_MAILBOX                    policy<{'arm64': 'n'}>
 CONFIG_POLARFIRE_SOC_SYSCONS                    policy<{'arm64': 'y'}>
+CONFIG_POLLY_CLANG                              policy<{'arm64': 'y'}>
 CONFIG_POLYNOMIAL                               policy<{'arm64': 'm'}>
 CONFIG_POSIX_AUX_CLOCKS                         policy<{'arm64': 'n'}>
 CONFIG_POSIX_CPU_TIMERS_TASK_WORK               policy<{'arm64': 'y'}>
@@ -10518,7 +10524,6 @@ CONFIG_SLUB_STATS                               policy<{'arm64': 'n'}>
 CONFIG_SLUB_TINY                                policy<{'arm64': 'n'}>
 CONFIG_SMARTJOYPLUS_FF                          policy<{'arm64': 'y'}>
 CONFIG_SMBFS                                    policy<{'arm64': 'm'}>
-CONFIG_SMB_COMMON_SMBDIRECT                     policy<{'arm64': 'm'}>
 CONFIG_SMB_SERVER                               policy<{'arm64': 'm'}>
 CONFIG_SMB_SERVER_CHECK_CAP_NET_ADMIN           policy<{'arm64': 'y'}>
 CONFIG_SMB_SERVER_KERBEROS5                     policy<{'arm64': 'y'}>
