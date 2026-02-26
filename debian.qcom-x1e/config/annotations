@@ -1144,7 +1144,6 @@ CONFIG_ARM_GIC_PM                               policy<{'arm64': 'y'}>
 CONFIG_ARM_GIC_V2M                              policy<{'arm64': 'y'}>
 CONFIG_ARM_GIC_V3                               policy<{'arm64': 'y'}>
 CONFIG_ARM_GIC_V3_ITS                           policy<{'arm64': 'y'}>
-CONFIG_ARM_GIC_V3_ITS_FSL_MC                    policy<{'arm64': 'y'}>
 CONFIG_ARM_GIC_V5                               policy<{'arm64': 'y'}>
 CONFIG_ARM_HISI_UNCORE_DEVFREQ                  policy<{'arm64': 'n'}>
 CONFIG_ARM_IMX6Q_CPUFREQ                        policy<{'arm64': 'm'}>
@@ -3042,7 +3041,6 @@ CONFIG_DMABUF_DEBUG                             policy<{'arm64': 'n'}>
 CONFIG_DMABUF_HEAPS                             policy<{'arm64': 'y'}>
 CONFIG_DMABUF_HEAPS_CMA                         policy<{'arm64': 'y'}>
 CONFIG_DMABUF_HEAPS_SYSTEM                      policy<{'arm64': 'y'}>
-CONFIG_DMABUF_MOVE_NOTIFY                       policy<{'arm64': 'y'}>
 CONFIG_DMABUF_SELFTESTS                         policy<{'arm64': 'n'}>
 CONFIG_DMADEVICES                               policy<{'arm64': 'y'}>
 CONFIG_DMADEVICES_DEBUG                         policy<{'arm64': 'n'}>
@@ -4497,6 +4495,7 @@ CONFIG_GPIO_XLP                                 policy<{'arm64': 'm'}>
 CONFIG_GPIO_XRA1403                             policy<{'arm64': 'm'}>
 CONFIG_GPIO_ZYNQ                                policy<{'arm64': 'm'}>
 CONFIG_GPIO_ZYNQMP_MODEPIN                      policy<{'arm64': 'm'}>
+CONFIG_GPU_BUDDY                                policy<{'arm64': 'y'}>
 CONFIG_GP_PCI1XXXX                              policy<{'arm64': 'm'}>
 CONFIG_GRACE_PERIOD                             policy<{'arm64': 'm'}>
 CONFIG_GREENASIA_FF                             policy<{'arm64': 'y'}>
@@ -7813,7 +7812,9 @@ CONFIG_NTFS3_64BIT_CLUSTER                      policy<{'arm64': 'n'}>
 CONFIG_NTFS3_FS                                 policy<{'arm64': 'm'}>
 CONFIG_NTFS3_FS_POSIX_ACL                       policy<{'arm64': 'y'}>
 CONFIG_NTFS3_LZX_XPRESS                         policy<{'arm64': 'y'}>
+CONFIG_NTFS_DEBUG                               policy<{'arm64': 'n'}>
 CONFIG_NTFS_FS                                  policy<{'arm64': 'm'}>
+CONFIG_NTFS_FS_POSIX_ACL                        policy<{'arm64': 'n'}>
 CONFIG_NTSYNC                                   policy<{'arm64': 'n'}>
 CONFIG_NULL_TTY                                 policy<{'arm64': 'm'}>
 CONFIG_NUMA_BALANCING                           policy<{'arm64': 'y'}>
@@ -10272,7 +10273,6 @@ CONFIG_SENSORS_Q54SJ108A2                       policy<{'arm64': 'm'}>
 CONFIG_SENSORS_RM3100                           policy<{'arm64': 'm'}>
 CONFIG_SENSORS_RM3100_I2C                       policy<{'arm64': 'm'}>
 CONFIG_SENSORS_RM3100_SPI                       policy<{'arm64': 'm'}>
-CONFIG_SENSORS_SA67MCU                          policy<{'arm64': 'n'}>
 CONFIG_SENSORS_SBTSI                            policy<{'arm64': 'm'}>
 CONFIG_SENSORS_SCH5627                          policy<{'arm64': 'm'}>
 CONFIG_SENSORS_SCH5636                          policy<{'arm64': 'm'}>
@@ -10340,6 +10340,7 @@ CONFIG_SENSORS_XDP710                           policy<{'arm64': 'm'}>
 CONFIG_SENSORS_XDPE122                          policy<{'arm64': 'm'}>
 CONFIG_SENSORS_XDPE122_REGULATOR                policy<{'arm64': 'y'}>
 CONFIG_SENSORS_XDPE152                          policy<{'arm64': 'm'}>
+CONFIG_SENSORS_XDPE1A2G7B                       policy<{'arm64': 'n'}>
 CONFIG_SENSORS_XGENE                            policy<{'arm64': 'm'}>
 CONFIG_SENSORS_ZL6100                           policy<{'arm64': 'm'}>
 CONFIG_SERIAL_8250                              policy<{'arm64': 'y'}>
