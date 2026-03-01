@@ -1673,7 +1673,7 @@ static __always_inline void raw_spin_rq_unlock_irq(struct rq *rq)
 	local_irq_enable();
 }
 
-static inline unsigned long _raw_spin_rq_lock_irqsave(struct rq *rq)
+static __always_inline unsigned long _raw_spin_rq_lock_irqsave(struct rq *rq)
 	__acquires(__rq_lockp(rq))
 {
 	unsigned long flags;
@@ -1684,7 +1684,7 @@ static inline unsigned long _raw_spin_rq_lock_irqsave(struct rq *rq)
 	return flags;
 }
 
-static inline void raw_spin_rq_unlock_irqrestore(struct rq *rq, unsigned long flags)
+static __always_inline void raw_spin_rq_unlock_irqrestore(struct rq *rq, unsigned long flags)
 	__releases(__rq_lockp(rq))
 {
 	raw_spin_rq_unlock(rq);

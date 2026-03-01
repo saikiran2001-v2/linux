@@ -32,7 +32,7 @@ extern struct mm_struct *mm_alloc(void);
  * See also <Documentation/mm/active_mm.rst> for an in-depth explanation
  * of &mm_struct.mm_count vs &mm_struct.mm_users.
  */
-static inline void mmgrab(struct mm_struct *mm)
+static __always_inline void mmgrab(struct mm_struct *mm)
 {
 	atomic_inc(&mm->mm_count);
 }
@@ -85,13 +85,13 @@ static __always_inline void mmdrop_sched(struct mm_struct *mm)
 #endif
 
 /* Helpers for lazy TLB mm refcounting */
-static inline void mmgrab_lazy_tlb(struct mm_struct *mm)
+static __always_inline void mmgrab_lazy_tlb(struct mm_struct *mm)
 {
 	if (IS_ENABLED(CONFIG_MMU_LAZY_TLB_REFCOUNT))
 		mmgrab(mm);
 }
 
-static inline void mmdrop_lazy_tlb(struct mm_struct *mm)
+static __always_inline void mmdrop_lazy_tlb(struct mm_struct *mm)
 {
 	if (IS_ENABLED(CONFIG_MMU_LAZY_TLB_REFCOUNT)) {
 		mmdrop(mm);
@@ -128,12 +128,12 @@ static __always_inline void mmdrop_lazy_tlb_sched(struct mm_struct *mm)
  * See also <Documentation/mm/active_mm.rst> for an in-depth explanation
  * of &mm_struct.mm_count vs &mm_struct.mm_users.
  */
-static inline void mmget(struct mm_struct *mm)
+static __always_inline void mmget(struct mm_struct *mm)
 {
 	atomic_inc(&mm->mm_users);
 }
 
-static inline bool mmget_not_zero(struct mm_struct *mm)
+static __always_inline bool mmget_not_zero(struct mm_struct *mm)
 {
 	return atomic_inc_not_zero(&mm->mm_users);
 }
