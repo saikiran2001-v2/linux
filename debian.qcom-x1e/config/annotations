@@ -1774,6 +1774,7 @@ CONFIG_CACHEFILES_ERROR_INJECTION               policy<{'arm64': 'y'}>
 CONFIG_CACHEFILES_ONDEMAND                      policy<{'arm64': 'n'}>
 CONFIG_CACHEMAINT_FOR_HOTPLUG                   policy<{'arm64': 'n'}>
 CONFIG_CACHESTAT_SYSCALL                        policy<{'arm64': 'y'}>
+CONFIG_CACHY                                    policy<{'arm64': 'y'}>
 CONFIG_CADENCE_WATCHDOG                         policy<{'arm64': 'm'}>
 CONFIG_CAIF                                     policy<{'arm64': 'm'}>
 CONFIG_CAIF_DEBUG                               policy<{'arm64': 'n'}>
@@ -2519,7 +2520,7 @@ CONFIG_COMMON_CLK_ZYNQMP                        policy<{'arm64': 'y'}>
 CONFIG_COMMON_RESET_HI3660                      policy<{'arm64': 'm'}>
 CONFIG_COMMON_RESET_HI6220                      policy<{'arm64': 'm'}>
 CONFIG_COMPACTION                               policy<{'arm64': 'y'}>
-CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '1'}>
+CONFIG_COMPACT_UNEVICTABLE_DEFAULT              policy<{'arm64': '0'}>
 CONFIG_COMPAT                                   policy<{'arm64': 'y'}>
 CONFIG_COMPAT_32BIT_TIME                        policy<{'arm64': 'y'}>
 CONFIG_COMPAT_ALIGNMENT_FIXUPS                  policy<{'arm64': 'n'}>
@@ -4938,6 +4939,9 @@ CONFIG_HZ                                       policy<{'arm64': '1000'}>
 CONFIG_HZ_100                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_250                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_300                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_500                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_600                                   policy<{'arm64': 'n'}>
+CONFIG_HZ_750                                   policy<{'arm64': 'n'}>
 CONFIG_HZ_PERIODIC                              policy<{'arm64': 'n'}>
 CONFIG_I2C                                      policy<{'arm64': 'y'}>
 CONFIG_I2CR_SCOM                                policy<{'arm64': 'm'}>
@@ -5916,7 +5920,6 @@ CONFIG_KVFREE_RCU_BATCHED                       policy<{'arm64': 'y'}>
 CONFIG_KVM_COMMON                               policy<{'arm64': 'y'}>
 CONFIG_KVM_GENERIC_DIRTYLOG_READ_PROTECT        policy<{'arm64': 'y'}>
 CONFIG_KVM_GENERIC_HARDWARE_ENABLING            policy<{'arm64': 'y'}>
-CONFIG_KVM_GENERIC_MMU_NOTIFIER                 policy<{'arm64': 'y'}>
 CONFIG_KVM_GUEST_MEMFD                          policy<{'arm64': 'y'}>
 CONFIG_KVM_MMIO                                 policy<{'arm64': 'y'}>
 CONFIG_KVM_VFIO                                 policy<{'arm64': 'y'}>
@@ -12430,6 +12433,7 @@ CONFIG_USB_DWC3_GENERIC_PLAT                    policy<{'arm64': 'y'}>
 CONFIG_USB_DWC3_GOOGLE                          policy<{'arm64': 'n'}>
 CONFIG_USB_DWC3_HAPS                            policy<{'arm64': 'm'}>
 CONFIG_USB_DWC3_HOST                            policy<{'arm64': 'n'}>
+CONFIG_USB_DWC3_IMX                             policy<{'arm64': 'y'}>
 CONFIG_USB_DWC3_IMX8MP                          policy<{'arm64': 'm'}>
 CONFIG_USB_DWC3_KEYSTONE                        policy<{'arm64': 'm'}>
 CONFIG_USB_DWC3_MESON_G12A                      policy<{'arm64': 'm'}>
@@ -13476,6 +13480,7 @@ CONFIG_XIL_AXIS_FIFO                            policy<{'arm64': 'm'}>
 CONFIG_XLNX_EVENT_MANAGER                       policy<{'arm64': 'y'}>
 CONFIG_XLNX_R5_REMOTEPROC                       policy<{'arm64': 'm'}>
 CONFIG_XOR_BLOCKS                               policy<{'arm64': 'm'}>
+CONFIG_XOR_BLOCKS_ARCH                          policy<{'arm64': 'y'}>
 CONFIG_XPS                                      policy<{'arm64': 'y'}>
 CONFIG_XXHASH                                   policy<{'arm64': 'y'}>
 CONFIG_XZ_DEC_ARM                               policy<{'arm64': 'y'}>
