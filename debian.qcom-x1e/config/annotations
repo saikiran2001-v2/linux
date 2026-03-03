@@ -8953,6 +8953,7 @@ CONFIG_QCOM_SMSM                                policy<{'arm64': 'y'}>
 CONFIG_QCOM_SOCINFO                             policy<{'arm64': 'm'}>
 CONFIG_QCOM_SPM                                 policy<{'arm64': 'y'}>
 CONFIG_QCOM_SPMI_ADC5                           policy<{'arm64': 'm'}>
+CONFIG_QCOM_SPMI_ADC5_GEN3                      policy<{'arm64': 'n'}>
 CONFIG_QCOM_SPMI_ADC_TM5                        policy<{'arm64': 'm'}>
 CONFIG_QCOM_SPMI_IADC                           policy<{'arm64': 'm'}>
 CONFIG_QCOM_SPMI_RRADC                          policy<{'arm64': 'm'}>
@@ -11251,6 +11252,7 @@ CONFIG_SND_SOC_TEGRA30_AHUB                     policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA30_I2S                      policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA_ALC5632                    policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA_AUDIO_GRAPH_CARD           policy<{'arm64': 'm'}>
+CONFIG_SND_SOC_TEGRA_CPCAP                      policy<{'arm64': 'n'}>
 CONFIG_SND_SOC_TEGRA_MACHINE_DRV                policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA_MAX98088                   policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA_MAX98090                   policy<{'arm64': 'm'}>
@@ -11261,6 +11263,7 @@ CONFIG_SND_SOC_TEGRA_SGTL5000                   policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA_TRIMSLICE                  policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA_WM8753                     policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TEGRA_WM8903                     policy<{'arm64': 'm'}>
+CONFIG_SND_SOC_TEGRA_WM8962                     policy<{'arm64': 'n'}>
 CONFIG_SND_SOC_TEGRA_WM9712                     policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TFA9879                          policy<{'arm64': 'm'}>
 CONFIG_SND_SOC_TFA989X                          policy<{'arm64': 'm'}>
@@ -11495,7 +11498,7 @@ CONFIG_SPI_NXP_XSPI                             policy<{'arm64': 'n'}>
 CONFIG_SPI_OC_TINY                              policy<{'arm64': 'm'}>
 CONFIG_SPI_OFFLOAD                              policy<{'arm64': 'y'}>
 CONFIG_SPI_OFFLOAD_TRIGGER_ADI_UTIL_SD          policy<{'arm64': 'n'}>
-CONFIG_SPI_OFFLOAD_TRIGGER_PWM                  policy<{'arm64': 'n'}>
+CONFIG_SPI_OFFLOAD_TRIGGER_PWM                  policy<{'arm64': 'm'}>
 CONFIG_SPI_OMAP24XX                             policy<{'arm64': 'y'}>
 CONFIG_SPI_ORION                                policy<{'arm64': 'm'}>
 CONFIG_SPI_PCI1XXXX                             policy<{'arm64': 'm'}>
