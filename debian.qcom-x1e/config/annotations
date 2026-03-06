@@ -1239,7 +1239,7 @@ CONFIG_AS_HAS_CFI_NEGATE_RA_STATE               policy<{'arm64': 'y'}>
 CONFIG_AS_HAS_MOPS                              policy<{'arm64': 'y'}>
 CONFIG_AS_HAS_NON_CONST_ULEB128                 policy<{'arm64': 'y'}>
 CONFIG_AS_IS_LLVM                               policy<{'arm64': 'y'}>
-CONFIG_AS_VERSION                               policy<{'arm64': '200108'}>
+CONFIG_AS_VERSION                               policy<{'arm64': '210108'}>
 CONFIG_AT76C50X_USB                             policy<{'arm64': 'm'}>
 CONFIG_AT803X_PHY                               policy<{'arm64': 'y'}>
 CONFIG_ATA                                      policy<{'arm64': 'y'}>
@@ -1887,8 +1887,10 @@ CONFIG_CC_HAS_COUNTED_BY                        policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_INT128                            policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_KASAN_GENERIC                     policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_KASAN_SW_TAGS                     policy<{'arm64': 'y'}>
+CONFIG_CC_HAS_MULTIDIMENSIONAL_NONSTRING        policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_NO_PROFILE_FN_ATTR                policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_RANDSTRUCT                        policy<{'arm64': 'y'}>
+CONFIG_CC_HAS_SANCOV_STACK_DEPTH_CALLBACK       policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_SANE_FUNCTION_ALIGNMENT           policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_UBSAN_ARRAY_BOUNDS                policy<{'arm64': 'y'}>
 CONFIG_CC_HAS_WORKING_NOSANITIZE_ADDRESS        policy<{'arm64': 'y'}>
@@ -1900,7 +1902,7 @@ CONFIG_CC_IS_CLANG                              policy<{'arm64': 'y'}>
 CONFIG_CC_MS_EXTENSIONS                         policy<{'arm64': '"-fms-extensions"'}>
 CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE              policy<{'arm64': 'y'}>
 CONFIG_CC_OPTIMIZE_FOR_SIZE                     policy<{'arm64': 'n'}>
-CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"Ubuntu clang version 20.1.8 (0ubuntu4)"'}>
+CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"Ubuntu clang version 21.1.8 (1ubuntu1)"'}>
 CONFIG_CDNS_I3C_MASTER                          policy<{'arm64': 'm'}>
 CONFIG_CDROM                                    policy<{'arm64': 'y'}>
 CONFIG_CDX_BUS                                  policy<{'arm64': 'y'}>
@@ -2047,7 +2049,7 @@ CONFIG_CIFS_SWN_UPCALL                          policy<{'arm64': 'y'}>
 CONFIG_CIFS_UPCALL                              policy<{'arm64': 'y'}>
 CONFIG_CIFS_XATTR                               policy<{'arm64': 'y'}>
 CONFIG_CLANG_SUPPORTS_DYNAMIC_FTRACE_WITH_ARGS  policy<{'arm64': 'y'}>
-CONFIG_CLANG_VERSION                            policy<{'arm64': '200108'}>
+CONFIG_CLANG_VERSION                            policy<{'arm64': '210108'}>
 CONFIG_CLKSRC_MMIO                              policy<{'arm64': 'y'}>
 CONFIG_CLKSRC_STM32_LP                          policy<{'arm64': 'y'}>
 CONFIG_CLK_ACTIONS                              policy<{'arm64': 'y'}>
@@ -5913,6 +5915,7 @@ CONFIG_KS8842                                   policy<{'arm64': 'm'}>
 CONFIG_KS8851                                   policy<{'arm64': 'm'}>
 CONFIG_KS8851_MLL                               policy<{'arm64': 'm'}>
 CONFIG_KSM                                      policy<{'arm64': 'y'}>
+CONFIG_KSTACK_ERASE                             policy<{'arm64': 'n'}>
 CONFIG_KSZ884X_PCI                              policy<{'arm64': 'm'}>
 CONFIG_KUNIT                                    policy<{'arm64': 'n'}>
 CONFIG_KUNPENG_HCCS                             policy<{'arm64': 'm'}>
@@ -5958,6 +5961,7 @@ CONFIG_LCD_VGG2432A4                            policy<{'arm64': 'm'}>
 CONFIG_LDISC_AUTOLOAD                           policy<{'arm64': 'y'}>
 CONFIG_LDM_DEBUG                                policy<{'arm64': 'n'}>
 CONFIG_LDM_PARTITION                            policy<{'arm64': 'y'}>
+CONFIG_LD_CAN_USE_KEEP_IN_OVERLAY               policy<{'arm64': 'y'}>
 CONFIG_LD_IS_LLD                                policy<{'arm64': 'y'}>
 CONFIG_LD_ORPHAN_WARN                           policy<{'arm64': 'y'}>
 CONFIG_LD_ORPHAN_WARN_LEVEL                     policy<{'arm64': '"warn"'}>
@@ -6116,7 +6120,7 @@ CONFIG_LIVEPATCH                                policy<{'arm64': 'n'}>
 CONFIG_LKDTM                                    policy<{'arm64': 'n'}>
 CONFIG_LLC                                      policy<{'arm64': 'm'}>
 CONFIG_LLC2                                     policy<{'arm64': 'm'}>
-CONFIG_LLD_VERSION                              policy<{'arm64': '200108'}>
+CONFIG_LLD_VERSION                              policy<{'arm64': '210108'}>
 CONFIG_LMK04832                                 policy<{'arm64': 'm'}>
 CONFIG_LMP91000                                 policy<{'arm64': 'm'}>
 CONFIG_LOAD_UEFI_KEYS                           policy<{'arm64': 'y'}>
