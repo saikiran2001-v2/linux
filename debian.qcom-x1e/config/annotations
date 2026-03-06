@@ -1897,6 +1897,7 @@ CONFIG_CC_HAVE_SHADOW_CALL_STACK                policy<{'arm64': 'y'}>
 CONFIG_CC_HAVE_STACKPROTECTOR_SYSREG            policy<{'arm64': 'y'}>
 CONFIG_CC_IMPLICIT_FALLTHROUGH                  policy<{'arm64': '"-Wimplicit-fallthrough"'}>
 CONFIG_CC_IS_CLANG                              policy<{'arm64': 'y'}>
+CONFIG_CC_MS_EXTENSIONS                         policy<{'arm64': '"-fms-extensions"'}>
 CONFIG_CC_OPTIMIZE_FOR_PERFORMANCE              policy<{'arm64': 'y'}>
 CONFIG_CC_OPTIMIZE_FOR_SIZE                     policy<{'arm64': 'n'}>
 CONFIG_CC_VERSION_TEXT                          policy<{'arm64': '"Ubuntu clang version 20.1.8 (0ubuntu4)"'}>
@@ -10529,6 +10530,7 @@ CONFIG_SLUB_STATS                               policy<{'arm64': 'n'}>
 CONFIG_SLUB_TINY                                policy<{'arm64': 'n'}>
 CONFIG_SMARTJOYPLUS_FF                          policy<{'arm64': 'y'}>
 CONFIG_SMBFS                                    policy<{'arm64': 'm'}>
+CONFIG_SMB_COMMON_SMBDIRECT                     policy<{'arm64': 'm'}>
 CONFIG_SMB_SERVER                               policy<{'arm64': 'm'}>
 CONFIG_SMB_SERVER_CHECK_CAP_NET_ADMIN           policy<{'arm64': 'y'}>
 CONFIG_SMB_SERVER_KERBEROS5                     policy<{'arm64': 'y'}>
