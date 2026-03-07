@@ -3435,6 +3435,7 @@ CONFIG_DRM_PRIVACY_SCREEN                       policy<{'arm64': 'y'}>
 CONFIG_DRM_QXL                                  policy<{'arm64': 'm'}>
 CONFIG_DRM_RADEON                               policy<{'arm64': 'm'}>
 CONFIG_DRM_RADEON_USERPTR                       policy<{'arm64': 'n'}>
+CONFIG_DRM_RAS                                  policy<{'arm64': 'n'}>
 CONFIG_DRM_RCAR_CMM                             policy<{'arm64': 'm'}>
 CONFIG_DRM_RCAR_DU                              policy<{'arm64': 'm'}>
 CONFIG_DRM_RCAR_DW_HDMI                         policy<{'arm64': 'm'}>
