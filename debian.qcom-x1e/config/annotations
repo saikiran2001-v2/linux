@@ -988,6 +988,7 @@ CONFIG_ARCH_TEGRA_186_SOC                       policy<{'arm64': 'y'}>
 CONFIG_ARCH_TEGRA_194_SOC                       policy<{'arm64': 'y'}>
 CONFIG_ARCH_TEGRA_210_SOC                       policy<{'arm64': 'y'}>
 CONFIG_ARCH_TEGRA_234_SOC                       policy<{'arm64': 'y'}>
+CONFIG_ARCH_TEGRA_238_SOC                       policy<{'arm64': 'y'}>
 CONFIG_ARCH_TEGRA_241_SOC                       policy<{'arm64': 'y'}>
 CONFIG_ARCH_TEGRA_264_SOC                       policy<{'arm64': 'n'}>
 CONFIG_ARCH_THUNDER                             policy<{'arm64': 'y'}>
@@ -2996,7 +2997,6 @@ CONFIG_DEBUG_VM_PGTABLE                         policy<{'arm64': 'n'}>
 CONFIG_DEBUG_WQ_FORCE_RR_CPU                    policy<{'arm64': 'n'}>
 CONFIG_DEBUG_WW_MUTEX_SLOWPATH                  policy<{'arm64': 'n'}>
 CONFIG_DEBUG_WX                                 policy<{'arm64': 'y'}>
-CONFIG_DEBUG_XARRAY                             policy<{'arm64': 'n'}>
 CONFIG_DECOMPRESS_BZIP2                         policy<{'arm64': 'y'}>
 CONFIG_DECOMPRESS_GZIP                          policy<{'arm64': 'y'}>
 CONFIG_DECOMPRESS_LZ4                           policy<{'arm64': 'y'}>
@@ -5839,6 +5839,7 @@ CONFIG_K3_RTI_WATCHDOG                          policy<{'arm64': 'm'}>
 CONFIG_K3_THERMAL                               policy<{'arm64': 'm'}>
 CONFIG_KALLSYMS                                 policy<{'arm64': 'y'}>
 CONFIG_KALLSYMS_ALL                             policy<{'arm64': 'y'}>
+CONFIG_KALLSYMS_LINEINFO                        policy<{'arm64': 'n'}>
 CONFIG_KALLSYMS_SELFTEST                        policy<{'arm64': 'n'}>
 CONFIG_KARMA_PARTITION                          policy<{'arm64': 'y'}>
 CONFIG_KASAN                                    policy<{'arm64': 'n'}>
@@ -6315,7 +6316,6 @@ CONFIG_MDIO                                     policy<{'arm64': 'm'}>
 CONFIG_MDIO_AIROHA                              policy<{'arm64': 'n'}>
 CONFIG_MDIO_BCM_UNIMAC                          policy<{'arm64': 'm'}>
 CONFIG_MDIO_BITBANG                             policy<{'arm64': 'y'}>
-CONFIG_MDIO_BUS                                 policy<{'arm64': 'y'}>
 CONFIG_MDIO_BUS_MUX                             policy<{'arm64': 'm'}>
 CONFIG_MDIO_BUS_MUX_GPIO                        policy<{'arm64': 'm'}>
 CONFIG_MDIO_BUS_MUX_MESON_G12A                  policy<{'arm64': 'm'}>
@@ -8238,8 +8238,8 @@ CONFIG_PCI_PASID                                policy<{'arm64': 'y'}>
 CONFIG_PCI_PF_STUB                              policy<{'arm64': 'm'}>
 CONFIG_PCI_PRI                                  policy<{'arm64': 'y'}>
 CONFIG_PCI_PWRCTRL                              policy<{'arm64': 'y'}>
+CONFIG_PCI_PWRCTRL_GENERIC                      policy<{'arm64': 'y'}>
 CONFIG_PCI_PWRCTRL_PWRSEQ                       policy<{'arm64': 'm'}>
-CONFIG_PCI_PWRCTRL_SLOT                         policy<{'arm64': 'y'}>
 CONFIG_PCI_PWRCTRL_TC9563                       policy<{'arm64': 'm'}>
 CONFIG_PCI_QUIRKS                               policy<{'arm64': 'y'}>
 CONFIG_PCI_REALLOC_ENABLE_AUTO                  policy<{'arm64': 'y'}>
