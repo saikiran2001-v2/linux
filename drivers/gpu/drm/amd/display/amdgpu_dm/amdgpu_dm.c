@@ -13977,12 +13977,12 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
 	/* Copy current range and do not touch display_info afterwards */
 	copy_range_to_amdgpu_connector(amdgpu_dm_connector, connector);
 
-	/* Some eDP panels only have the refresh rate range info in DisplayID */
-	if (is_aconn_range_invalid(amdgpu_dm_connector))
-		parse_edid_displayid_vrr(amdgpu_dm_connector, edid);
+	if (sink->sink_signal == SIGNAL_TYPE_DISPLAY_PORT ||
+	    sink->sink_signal == SIGNAL_TYPE_EDP) {
+		/* Some eDP panels only have the refresh rate range info in DisplayID */
+		if (is_aconn_range_invalid(amdgpu_dm_connector))
+			parse_edid_displayid_vrr(amdgpu_dm_connector, edid);
 
-	if (edid && (sink->sink_signal == SIGNAL_TYPE_DISPLAY_PORT ||
-		     sink->sink_signal == SIGNAL_TYPE_EDP)) {
 		if (dpcd_caps.allow_invalid_MSA_timing_param)
 			freesync_capable = is_freesync_capable(amdgpu_dm_connector);
 
@@ -13994,7 +13994,7 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
 			amdgpu_dm_connector->as_type = ADAPTIVE_SYNC_TYPE_EDP;
 		}
 
-	} else if (sink->sink_signal == SIGNAL_TYPE_HDMI_TYPE_A && drm_edid) {
+	} else if (sink->sink_signal == SIGNAL_TYPE_HDMI_TYPE_A) {
 		if (!parse_amd_vsdb_cea(amdgpu_dm_connector, edid, &vsdb_info))
 			goto update;
 
@@ -14010,7 +14010,7 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
 	if (amdgpu_dm_connector->dc_link)
 		as_type = dm_get_adaptive_sync_support_type(amdgpu_dm_connector->dc_link);
 
-	if (as_type == FREESYNC_TYPE_PCON_IN_WHITELIST && drm_edid) {
+	if (as_type == FREESYNC_TYPE_PCON_IN_WHITELIST) {
 		if (!parse_amd_vsdb_cea(amdgpu_dm_connector, edid, &vsdb_info))
 			goto update;
 
@@ -14040,6 +14040,11 @@ void amdgpu_dm_update_freesync_caps(struct drm_connector *connector,
 update:
 	if (dm_con_state)
 		dm_con_state->freesync_capable = freesync_capable;
+
+	if (freesync_capable) {
+		connector->display_info.monitor_range.min_vfreq = amdgpu_dm_connector->min_vfreq;
+		connector->display_info.monitor_range.max_vfreq = amdgpu_dm_connector->max_vfreq;
+	}
 
 	if (connector->state && amdgpu_dm_connector->dc_link && !freesync_capable &&
 	    amdgpu_dm_connector->dc_link->replay_settings.config.replay_supported) {
