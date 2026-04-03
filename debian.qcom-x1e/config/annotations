@@ -1069,6 +1069,7 @@ CONFIG_ARM64_ERRATUM_2658417                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_2966298                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_3117295                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_3194386                    policy<{'arm64': 'y'}>
+CONFIG_ARM64_ERRATUM_4193714                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_4311569                    policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_819472                     policy<{'arm64': 'y'}>
 CONFIG_ARM64_ERRATUM_824069                     policy<{'arm64': 'y'}>
@@ -3032,6 +3033,7 @@ CONFIG_DEVTMPFS_SAFE                            policy<{'arm64': 'y'}>
 CONFIG_DEV_COREDUMP                             policy<{'arm64': 'y'}>
 CONFIG_DEV_DAX                                  policy<{'arm64': 'm'}>
 CONFIG_DEV_DAX_CXL                              policy<{'arm64': 'm'}>
+CONFIG_DEV_DAX_FSDEV                            policy<{'arm64': 'm'}>
 CONFIG_DEV_DAX_HMEM                             policy<{'arm64': 'm'}>
 CONFIG_DEV_DAX_HMEM_DEVICES                     policy<{'arm64': 'y'}>
 CONFIG_DEV_DAX_KMEM                             policy<{'arm64': 'm'}>
@@ -3142,6 +3144,7 @@ CONFIG_DPS310                                   policy<{'arm64': 'm'}>
 CONFIG_DQL                                      policy<{'arm64': 'y'}>
 CONFIG_DRAGONRISE_FF                            policy<{'arm64': 'y'}>
 CONFIG_DRBD_FAULT_INJECTION                     policy<{'arm64': 'n'}>
+CONFIG_DRIVER_DEFERRED_PROBE_TIMEOUT            policy<{'arm64': '10'}>
 CONFIG_DRM_ACCEL                                policy<{'arm64': 'y'}>
 CONFIG_DRM_ACCEL_ARM_ETHOSU                     policy<{'arm64': 'n'}>
 CONFIG_DRM_ACCEL_QAIC                           policy<{'arm64': 'm'}>
@@ -8705,6 +8708,7 @@ CONFIG_PNFS_FLEXFILE_LAYOUT                     policy<{'arm64': 'm'}>
 CONFIG_PNP                                      policy<{'arm64': 'y'}>
 CONFIG_PNPACPI                                  policy<{'arm64': 'y'}>
 CONFIG_PNP_DEBUG_MESSAGES                       policy<{'arm64': 'y'}>
+CONFIG_POLARFIRE_SOC_IRQ_MUX                    policy<{'arm64': 'y'}>
 CONFIG_POLARFIRE_SOC_MAILBOX                    policy<{'arm64': 'n'}>
 CONFIG_POLARFIRE_SOC_SYSCONS                    policy<{'arm64': 'y'}>
 CONFIG_POLLY_CLANG                              policy<{'arm64': 'y'}>
@@ -11964,6 +11968,7 @@ CONFIG_TEST_SYSCTL                              policy<{'arm64': 'n'}>
 CONFIG_TEST_UBSAN                               policy<{'arm64': 'n'}>
 CONFIG_TEST_UDELAY                              policy<{'arm64': 'n'}>
 CONFIG_TEST_VMALLOC                             policy<{'arm64': 'n'}>
+CONFIG_TEST_WORKQUEUE                           policy<{'arm64': 'n'}>
 CONFIG_TEST_XARRAY                              policy<{'arm64': 'n'}>
 CONFIG_TEXTSEARCH                               policy<{'arm64': 'y'}>
 CONFIG_TEXTSEARCH_BM                            policy<{'arm64': 'm'}>
@@ -12418,9 +12423,7 @@ CONFIG_USB_CDNS3_HOST                           policy<{'arm64': 'y'}>
 CONFIG_USB_CDNS3_IMX                            policy<{'arm64': 'm'}>
 CONFIG_USB_CDNS3_PCI_WRAP                       policy<{'arm64': 'm'}>
 CONFIG_USB_CDNS3_TI                             policy<{'arm64': 'm'}>
-CONFIG_USB_CDNSP_GADGET                         policy<{'arm64': 'y'}>
-CONFIG_USB_CDNSP_HOST                           policy<{'arm64': 'y'}>
-CONFIG_USB_CDNSP_PCI                            policy<{'arm64': 'm'}>
+CONFIG_USB_CDNSP                                policy<{'arm64': 'n'}>
 CONFIG_USB_CDNS_HOST                            policy<{'arm64': 'y'}>
 CONFIG_USB_CDNS_SUPPORT                         policy<{'arm64': 'm'}>
 CONFIG_USB_CHAOSKEY                             policy<{'arm64': 'm'}>
