@@ -2636,6 +2636,7 @@ CONFIG_CROS_USBPD_LOGGER                        policy<{'arm64': 'm'}>
 CONFIG_CROS_USBPD_NOTIFY                        policy<{'arm64': 'm'}>
 CONFIG_CRYPTO                                   policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_842                               policy<{'arm64': 'm'}>
+CONFIG_CRYPTO_ACOMP                             policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_ACOMP2                            policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_ADIANTUM                          policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_AEAD                              policy<{'arm64': 'y'}>
@@ -2858,7 +2859,6 @@ CONFIG_CRYPTO_PCRYPT                            policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_RMD160                            policy<{'arm64': 'm'}>
 CONFIG_CRYPTO_RNG                               policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_RNG2                              policy<{'arm64': 'y'}>
-CONFIG_CRYPTO_RNG_DEFAULT                       policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_RSA                               policy<{'arm64': 'y'}>
 CONFIG_CRYPTO_SEED                              policy<{'arm64': 'n'}>
 CONFIG_CRYPTO_SELFTESTS                         policy<{'arm64': 'n'}>
