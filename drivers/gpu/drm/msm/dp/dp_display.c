@@ -1711,19 +1711,22 @@ void msm_dp_bridge_atomic_post_disable(struct drm_bridge *drm_bridge,
 	msm_dp_display = container_of(dp, struct msm_dp_display_private, msm_dp_display);
 
 	/*
-	 * If DPU encoder is wedged, skip all hardware access in post_disable.
-	 * msm_dp_display_disable() calls msm_dp_ctrl_off() which does MMIO
-	 * to the DP controller, mainlink disable, PHY power off etc.
-	 * When the display hardware is frozen, these MMIO accesses can cause
-	 * a bus hang leading to kernel panic and spontaneous reboot.
-	 * Just update software state and release runtime PM.
+	 * If DPU encoder is wedged, skip DP controller MMIO writes (mainlink
+	 * disable, controller reset) that could hang if the display AXI fabric
+	 * is unstable. But DO clean up link clocks and the PHY PLL safely.
+	 *
+	 * Without proper clock cleanup, ctrl->link_clks_on stays true after
+	 * wedge disconnect, causing the next msm_dp_ctrl_on_stream() to skip
+	 * phy_power_on entirely. That leaves the pixel clock permanently stuck
+	 * at 'off' on reconnect, so the second monitor never comes back on.
 	 */
 	if (drm_bridge->encoder && dpu_encoder_is_wedged(drm_bridge->encoder)) {
-		DRM_WARN("encoder wedged, skipping DP hardware disable\n");
+		DRM_WARN("encoder wedged, performing safe DP clock/PHY cleanup\n");
 		mutex_lock(&msm_dp_display->event_mutex);
+		msm_dp_ctrl_off_wedged(msm_dp_display->ctrl);
+		msm_dp_display_host_phy_exit(msm_dp_display);
 		dp->power_on = false;
 		dp->link_ready = false;
-		msm_dp_display->phy_initialized = false;
 		msm_dp_display->hpd_state = ST_DISCONNECTED;
 		/* Flush stale HPD events so reconnection starts clean */
 		msm_dp_display->event_gndx = msm_dp_display->event_pndx;
