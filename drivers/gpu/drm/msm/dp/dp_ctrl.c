@@ -2652,6 +2652,34 @@ void msm_dp_ctrl_off(struct msm_dp_ctrl *msm_dp_ctrl)
 	phy_power_off(phy);
 }
 
+void msm_dp_ctrl_off_wedged(struct msm_dp_ctrl *msm_dp_ctrl)
+{
+	struct msm_dp_ctrl_private *ctrl;
+	struct phy *phy;
+
+	ctrl = container_of(msm_dp_ctrl, struct msm_dp_ctrl_private, msm_dp_ctrl);
+	phy = ctrl->phy;
+
+	/*
+	 * When the DPU encoder is wedged, skip DP controller MMIO writes
+	 * (mainlink_disable, panel vsc, controller reset) to avoid potential
+	 * bus hangs. Only clean up clocks and PHY PLL, which are safe.
+	 *
+	 * Without this, link_clks_on stays true after the wedge disconnect,
+	 * causing the next msm_dp_ctrl_on_stream() to skip phy_power_on,
+	 * leaving the pixel clock permanently stuck at 'off' on reconnect.
+	 */
+	if (ctrl->stream_clks_on) {
+		clk_disable_unprepare(ctrl->pixel_clk);
+		ctrl->stream_clks_on = false;
+	}
+
+	dev_pm_opp_set_rate(ctrl->dev, 0);
+	msm_dp_ctrl_link_clk_disable(&ctrl->msm_dp_ctrl);
+
+	phy_power_off(phy);
+}
+
 irqreturn_t msm_dp_ctrl_isr(struct msm_dp_ctrl *msm_dp_ctrl)
 {
 	struct msm_dp_ctrl_private *ctrl;
