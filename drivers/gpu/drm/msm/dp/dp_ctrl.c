@@ -1801,7 +1801,9 @@ static int msm_dp_ctrl_enable_mainlink_clocks(struct msm_dp_ctrl_private *ctrl)
 	ctrl->phy_opts.dp.ssc = drm_dp_max_downspread(dpcd);
 
 	phy_configure(phy, &ctrl->phy_opts);
-	phy_power_on(phy);
+	ret = phy_power_on(phy);
+	if (ret)
+		DRM_ERROR("DP PHY power on failed. ret=%d\n", ret);
 
 	dev_pm_opp_set_rate(ctrl->dev, ctrl->link->link_params.rate * 1000);
 	ret = msm_dp_ctrl_link_clk_enable(&ctrl->msm_dp_ctrl);
@@ -2534,8 +2536,12 @@ int msm_dp_ctrl_on_stream(struct msm_dp_ctrl *msm_dp_ctrl, bool force_link_train
 			usleep_range(2000, 5000);
 		}
 		if (ret) {
-			DRM_ERROR("Failed to start pixel clocks after %d retries. ret=%d\n",
-				  retries, ret);
+			DRM_ERROR("Failed to start pixel clocks after %d retries. ret=%d\n"
+				  "  pixel_rate=%lu Hz set_rate=%lu Hz actual=%lu Hz\n",
+				  retries, ret,
+				  pixel_rate * 1000,
+				  clk_round_rate(ctrl->pixel_clk, pixel_rate * 1000),
+				  clk_get_rate(ctrl->pixel_clk));
 			goto end;
 		}
 		ctrl->stream_clks_on = true;
