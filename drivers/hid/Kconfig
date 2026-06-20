@@ -201,6 +201,15 @@ config HID_ASUS
 	- GL553V series
 	- GL753V series
 
+config HID_ASUS_ALLY
+    tristate "Asus Ally gamepad configuration support"
+    depends on USB_HID
+    depends on LEDS_CLASS
+    depends on LEDS_CLASS_MULTICOLOR
+    select POWER_SUPPLY
+    help
+    Support for configuring the Asus ROG Ally gamepad using attributes.
+
 config HID_AUREAL
 	tristate "Aureal"
 	help
@@ -489,6 +498,7 @@ config HID_GT683R
 config HID_MSI
 	tristate "MSI Claw Gamepad Support"
 	depends on USB_HID
+	select NEW_LEDS
 	select LEDS_CLASS
 	select LEDS_CLASS_MULTICOLOR
 	help
@@ -1478,6 +1488,8 @@ source "drivers/hid/amd-sfh-hid/Kconfig"
 source "drivers/hid/surface-hid/Kconfig"
 
 source "drivers/hid/intel-thc-hid/Kconfig"
+
+source "drivers/hid/zotac-zone-hid/Kconfig"
 
 endif # HID
 
