@@ -14,13 +14,11 @@
 #include <dt-bindings/regulator/qcom,rpmh-regulator.h>
 #include <dt-bindings/clock/qcom,x1e80100-tcsr.h>
 
-#include "x1p42100.dtsi"
-#include "x1e80100-pmics.dtsi"
+#include "purwa.dtsi"
+#include "hamoa-pmics.dtsi"
 
 /delete-node/ &pmc8380_6;
 /delete-node/ &pmc8380_6_thermal;
-/delete-node/ &pm8010;
-/delete-node/ &pm8010_thermal;
 
 / {
 	model = "Surface Pro 12 inch";
@@ -1019,13 +1017,10 @@
 };
 
 &usb_1_ss0 {
+	dr_mode = "host";
+
 	status = "okay";
 };
-
-&usb_1_ss0_dwc3 {
-	dr_mode = "host";
-};
-
 
 &uart14 {
 	status = "okay";
@@ -1063,13 +1058,10 @@
 };
 
 &usb_1_ss1 {
+	dr_mode = "host";
+
 	status = "okay";
 };
-
-&usb_1_ss1_dwc3 {
-	dr_mode = "host";
-};
-
 
 &iris {
 	firmware-name = "qcom/x1p42100/qcvss8380.mbn";

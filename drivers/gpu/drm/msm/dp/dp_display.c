@@ -1403,14 +1403,11 @@ void msm_dp_bridge_atomic_enable(struct drm_bridge *drm_bridge,
 		return;
 	}
 
-	msm_dp_display_enable(msm_dp_display, force_link_train);
-
-	if (!dp->power_on) {
-		DRM_ERROR("DP display enable failed, aborting stream start\n");
-		if (hpd_state == ST_DISPLAY_OFF)
+	rc = msm_dp_display_enable(msm_dp_display, force_link_train);
+	if (rc) {
+		DRM_ERROR("DP display enable failed, aborting stream start (rc=%d)\n", rc);
+		if (msm_dp_display->phy_initialized)
 			msm_dp_display_host_phy_exit(msm_dp_display);
-		msm_dp_display->hpd_state = ST_DISPLAY_OFF;
-		mutex_unlock(&msm_dp_display->event_mutex);
 		return;
 	}
 
@@ -1467,17 +1464,11 @@ void msm_dp_bridge_atomic_post_disable(struct drm_bridge *drm_bridge,
 	 */
 	if (drm_bridge->encoder && dpu_encoder_is_wedged(drm_bridge->encoder)) {
 		DRM_WARN("encoder wedged, performing safe DP clock/PHY cleanup\n");
-		mutex_lock(&msm_dp_display->event_mutex);
 		msm_dp_ctrl_off_wedged(msm_dp_display->ctrl);
 		msm_dp_display_host_phy_exit(msm_dp_display);
 		dp->power_on = false;
-		dp->link_ready = false;
-		msm_dp_display->hpd_state = ST_DISCONNECTED;
-		/* Flush stale HPD events so reconnection starts clean */
-		msm_dp_display->event_gndx = msm_dp_display->event_pndx;
 		msm_dp_display_handle_plugged_change(dp, false);
 		pm_runtime_put_sync(&dp->pdev->dev);
-		mutex_unlock(&msm_dp_display->event_mutex);
 		return;
 	}
 
