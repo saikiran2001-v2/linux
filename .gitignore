@@ -193,3 +193,5 @@ sphinx_*/
 
 # Local OMEN kernel build customization (scripts/omen/build-kernel.sh)
 /patch-order
+*-workspace
+*.log
