@@ -252,12 +252,7 @@ static int x1e80100_platform_probe(struct platform_device *pdev)
 	data->cfg = of_device_get_match_data(dev);
 
 	card->driver_name = data->cfg->driver_name;
-	
-	/* Store topology name for late_probe */
-	if (data->cfg->topology_shortname)
-		strscpy(card->topology_shortname, data->cfg->topology_shortname,
-			sizeof(card->topology_shortname));
-	
+
 	/* Set late_probe callback for topology loading */
 	card->late_probe = x1e80100_late_probe;
 	
