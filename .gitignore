@@ -190,3 +190,6 @@ sphinx_*/
 
 # bc language scripts (not LLVM bitcode)
 !kernel/time/timeconst.bc
+
+# Local OMEN kernel build customization (scripts/omen/build-kernel.sh)
+/patch-order
