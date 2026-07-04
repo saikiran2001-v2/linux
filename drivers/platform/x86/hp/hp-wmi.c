@@ -16,8 +16,10 @@
 #include <linux/acpi.h>
 #include <linux/cleanup.h>
 #include <linux/compiler_attributes.h>
+#include <linux/delay.h>
 #include <linux/dmi.h>
 #include <linux/fixp-arith.h>
+#include <linux/hex.h>
 #include <linux/hwmon.h>
 #include <linux/init.h>
 #include <linux/input.h>
@@ -158,7 +160,7 @@ static const char * const omen_thermal_profile_boards[] = {
 	"88F7", "88FD", "88FE", "88FF",
 	"8900", "8901", "8902", "8912", "8917", "8918", "8949", "894A", "89EB",
 	"8A15", "8A42",
-	"8BAD",
+	"8BAD", "8E35",
 	"8C58",
 	"8E41",
 };
@@ -178,7 +180,7 @@ static const char * const omen_thermal_profile_force_v0_boards[] = {
  */
 static const char * const omen_timed_thermal_profile_boards[] = {
 	"8A15", "8A42",
-	"8BAD",
+	"8BAD", "8E35",
 };
 
 /* DMI Board names of Victus 16-d laptops */
@@ -258,6 +260,11 @@ static const struct dmi_system_id victus_s_thermal_profile_boards[] __initconst 
 		.driver_data = (void *)&omen_v1_legacy_thermal_params,
 	},
 	{
+		/* OMEN Slim 16-an0xxx, same generation as 8D41/8D87 */
+		.matches = { DMI_MATCH(DMI_BOARD_NAME, "8D40") },
+		.driver_data = (void *)&omen_v1_no_ec_thermal_params,
+	},
+	{
 		.matches = { DMI_MATCH(DMI_BOARD_NAME, "8D41") },
 		.driver_data = (void *)&omen_v1_no_ec_thermal_params,
 	},
@@ -332,6 +339,13 @@ enum hp_wmi_commandtype {
 	HPWMI_POSTCODEERROR_QUERY	= 0x2a,
 	HPWMI_SYSTEM_DEVICE_MODE	= 0x40,
 	HPWMI_THERMAL_PROFILE_QUERY	= 0x4c,
+	/* Omen keyboard four-zone controls */
+	HPWMI_FOURZONE_COLOR_GET	= 0x02,
+	HPWMI_FOURZONE_COLOR_SET	= 0x03,
+	HPWMI_FOURZONE_BRIGHT_GET	= 0x04,
+	HPWMI_FOURZONE_BRIGHT_SET	= 0x05,
+	HPWMI_FOURZONE_ANIM_GET		= 0x06,
+	HPWMI_FOURZONE_ANIM_SET		= 0x07,
 };
 
 struct victus_power_limits {
@@ -368,6 +382,7 @@ enum hp_wmi_command {
 	HPWMI_WRITE	= 0x02,
 	HPWMI_ODM	= 0x03,
 	HPWMI_GM	= 0x20008,
+	HPWMI_FOURZONE	= 0x20009,
 };
 
 enum hp_wmi_hardware_mask {
@@ -712,6 +727,18 @@ static int hp_wmi_read_int(int query)
 		return ret < 0 ? ret : -EINVAL;
 
 	return val;
+}
+
+/* Wrapper to read 4-zone data (colors / brightness / animation). */
+static int hp_wmi_fourzone_get(u8 commandtype, void *buffer, size_t size)
+{
+	return hp_wmi_perform_query(commandtype, HPWMI_FOURZONE, buffer, 0, size);
+}
+
+/* Wrapper to write 4-zone data. */
+static int hp_wmi_fourzone_set(u8 commandtype, void *buffer, size_t size)
+{
+	return hp_wmi_perform_query(commandtype, HPWMI_FOURZONE, buffer, size, 0);
 }
 
 static int hp_wmi_get_dock_state(void)
@@ -1097,6 +1124,116 @@ static ssize_t postcode_store(struct device *dev, struct device_attribute *attr,
 	return count;
 }
 
+static ssize_t fourzone_color_show(struct device *dev,
+				   struct device_attribute *attr, char *buf)
+{
+	u8 data[128] = {};
+	int ret;
+
+	ret = hp_wmi_fourzone_get(HPWMI_FOURZONE_COLOR_GET, data, sizeof(data));
+	if (ret)
+		return ret < 0 ? ret : -EIO;
+
+	return sysfs_emit(buf, "%*phN\n", 12, &data[25]);
+}
+
+static ssize_t fourzone_color_store(struct device *dev,
+				    struct device_attribute *attr,
+				    const char *buf, size_t count)
+{
+	u8 data[128] = {};
+	u8 user_colors[12] = {};
+	int ret;
+	size_t len = count;
+
+	if (len > 0 && buf[len - 1] == '\n')
+		len--;
+
+	if (len > sizeof(user_colors) * 2 || (len % 2) != 0)
+		return -EINVAL;
+
+	ret = hex2bin(user_colors, buf, len / 2);
+	if (ret)
+		return -EINVAL;
+
+	ret = hp_wmi_fourzone_get(HPWMI_FOURZONE_COLOR_GET, data, sizeof(data));
+	if (ret)
+		return ret < 0 ? ret : -EIO;
+
+	memcpy(&data[25], user_colors, len / 2);
+
+	ret = hp_wmi_fourzone_set(HPWMI_FOURZONE_COLOR_SET, data, sizeof(data));
+	if (ret)
+		return ret < 0 ? ret : -EIO;
+
+	return count;
+}
+
+static ssize_t fourzone_brightness_show(struct device *dev,
+					struct device_attribute *attr, char *buf)
+{
+	u8 data[16] = {};
+	int ret;
+
+	ret = hp_wmi_fourzone_get(HPWMI_FOURZONE_BRIGHT_GET, data, sizeof(data));
+	if (ret)
+		return ret < 0 ? ret : -EIO;
+
+	return sysfs_emit(buf, "%u\n", data[0]);
+}
+
+static ssize_t fourzone_brightness_store(struct device *dev,
+					 struct device_attribute *attr,
+					 const char *buf, size_t count)
+{
+	u8 value;
+	int ret;
+
+	ret = kstrtou8(buf, 0, &value);
+	if (ret)
+		return ret;
+
+	ret = hp_wmi_fourzone_set(HPWMI_FOURZONE_BRIGHT_SET, &value, sizeof(value));
+	if (ret)
+		return ret < 0 ? ret : -EIO;
+
+	return count;
+}
+
+static ssize_t fourzone_animation_show(struct device *dev,
+				       struct device_attribute *attr, char *buf)
+{
+	u8 data[16] = {};
+	int ret;
+
+	ret = hp_wmi_fourzone_get(HPWMI_FOURZONE_ANIM_GET, data, sizeof(data));
+	if (ret)
+		return ret < 0 ? ret : -EIO;
+
+	return sysfs_emit(buf, "%u\n", data[0]);
+}
+
+static ssize_t fourzone_animation_store(struct device *dev,
+					struct device_attribute *attr,
+					const char *buf, size_t count)
+{
+	u8 value;
+	int ret;
+
+	ret = kstrtou8(buf, 0, &value);
+	if (ret)
+		return ret;
+
+	ret = hp_wmi_fourzone_set(HPWMI_FOURZONE_ANIM_SET, &value, sizeof(value));
+	if (ret) {
+		pr_warn_ratelimited("fourzone animation set rejected by firmware (%d)\n",
+				    ret);
+		return ret < 0 ? ret : -EIO;
+	}
+
+	return count;
+}
+
 static int camera_shutter_input_setup(void)
 {
 	int err;
@@ -1130,6 +1267,9 @@ static DEVICE_ATTR_RW(als);
 static DEVICE_ATTR_RO(dock);
 static DEVICE_ATTR_RO(tablet);
 static DEVICE_ATTR_RW(postcode);
+static DEVICE_ATTR_RW(fourzone_color);
+static DEVICE_ATTR_RW(fourzone_brightness);
+static DEVICE_ATTR_RW(fourzone_animation);
 
 static struct attribute *hp_wmi_attrs[] = {
 	&dev_attr_display.attr,
@@ -1138,6 +1278,9 @@ static struct attribute *hp_wmi_attrs[] = {
 	&dev_attr_dock.attr,
 	&dev_attr_tablet.attr,
 	&dev_attr_postcode.attr,
+	&dev_attr_fourzone_color.attr,
+	&dev_attr_fourzone_brightness.attr,
+	&dev_attr_fourzone_animation.attr,
 	NULL,
 };
 ATTRIBUTE_GROUPS(hp_wmi);
@@ -1575,10 +1718,41 @@ inline int omen_thermal_profile_ec_timer_set(u8 value)
 	return ec_write(HP_OMEN_EC_THERMAL_PROFILE_TIMER_OFFSET, value);
 }
 
+static int victus_s_gpu_thermal_profile_set(bool ctgp_enable, bool ppab_enable,
+					    u8 dstate);
+static int victus_s_gpu_thermal_profile_get(bool *ctgp_enable,
+					    bool *ppab_enable,
+					    u8 *dstate,
+					    u8 *gpu_slowdown_temp);
+
+/*
+ * Some Omen boards (e.g. 8E35) support the Victus-S GPU power mode
+ * queries (CTGP/PPAB) which the Omen Gaming Hub toggles per thermal profile.
+ * Probe once instead of hardcoding board names, so unsupported firmware is
+ * skipped gracefully.
+ */
+static bool omen_has_gpu_thermal_modes(void)
+{
+	static int cached = -1;
+	bool ctgp_enable, ppab_enable;
+	u8 dstate, gpu_slowdown_temp;
+
+	if (cached == -1)
+		cached = victus_s_gpu_thermal_profile_get(&ctgp_enable,
+							  &ppab_enable,
+							  &dstate,
+							  &gpu_slowdown_temp) == 0;
+
+	return cached;
+}
+
 static int platform_profile_omen_set_ec(enum platform_profile_option profile)
 {
 	int err, tp, tp_version;
 	enum hp_thermal_profile_omen_flags flags = 0;
+	bool gpu_ctgp_enable = false;
+	bool gpu_ppab_enable = false;
+	u8 gpu_dstate = 1;
 
 	tp_version = omen_get_thermal_policy_version();
 
@@ -1587,22 +1761,37 @@ static int platform_profile_omen_set_ec(enum platform_profile_option profile)
 
 	switch (profile) {
 	case PLATFORM_PROFILE_PERFORMANCE:
-		if (tp_version == 0)
+		if (tp_version == 0) {
 			tp = HP_OMEN_V0_THERMAL_PROFILE_PERFORMANCE;
-		else
+			gpu_ctgp_enable = true;
+			gpu_ppab_enable = true;
+		} else {
 			tp = HP_OMEN_V1_THERMAL_PROFILE_PERFORMANCE;
+			gpu_ctgp_enable = true;
+			gpu_ppab_enable = true;
+		}
 		break;
 	case PLATFORM_PROFILE_BALANCED:
-		if (tp_version == 0)
+		if (tp_version == 0) {
 			tp = HP_OMEN_V0_THERMAL_PROFILE_DEFAULT;
-		else
+			gpu_ctgp_enable = false;
+			gpu_ppab_enable = true;
+		} else {
 			tp = HP_OMEN_V1_THERMAL_PROFILE_DEFAULT;
+			gpu_ctgp_enable = false;
+			gpu_ppab_enable = true;
+		}
 		break;
 	case PLATFORM_PROFILE_COOL:
-		if (tp_version == 0)
+		if (tp_version == 0) {
 			tp = HP_OMEN_V0_THERMAL_PROFILE_COOL;
-		else
+			gpu_ctgp_enable = false;
+			gpu_ppab_enable = false;
+		} else {
 			tp = HP_OMEN_V1_THERMAL_PROFILE_COOL;
+			gpu_ctgp_enable = false;
+			gpu_ppab_enable = false;
+		}
 		break;
 	default:
 		return -EOPNOTSUPP;
@@ -1611,6 +1800,12 @@ static int platform_profile_omen_set_ec(enum platform_profile_option profile)
 	err = omen_thermal_profile_set(tp);
 	if (err < 0)
 		return err;
+
+	hp_wmi_get_fan_count_userdefine_trigger();
+
+	if (omen_has_gpu_thermal_modes())
+		victus_s_gpu_thermal_profile_set(gpu_ctgp_enable, gpu_ppab_enable,
+						 gpu_dstate);
 
 	if (has_omen_thermal_profile_ec_timer()) {
 		err = omen_thermal_profile_ec_timer_set(0);
@@ -2412,8 +2607,6 @@ static int hp_wmi_apply_fan_settings(struct hp_wmi_hwmon_priv *priv)
 				 secs_to_jiffies(KEEP_ALIVE_DELAY_SECS));
 		return 0;
 	case PWM_MODE_MANUAL:
-		if (!is_victus_s_thermal_profile())
-			return -EOPNOTSUPP;
 		ret = hp_wmi_fan_speed_set(priv, pwm_to_rpm(priv->pwm, priv));
 		if (ret < 0)
 			return ret;
@@ -2445,8 +2638,8 @@ static umode_t hp_wmi_hwmon_is_visible(const void *data,
 {
 	switch (type) {
 	case hwmon_pwm:
-		if (attr == hwmon_pwm_input && !is_victus_s_thermal_profile())
-			return 0;
+		if (attr == hwmon_pwm_input)
+			return 0644;
 		return 0644;
 	case hwmon_fan:
 		if (is_victus_s_thermal_profile()) {
@@ -2514,45 +2707,39 @@ static int hp_wmi_hwmon_write(struct device *dev, enum hwmon_sensor_types type,
 			      u32 attr, int channel, long val)
 {
 	struct hp_wmi_hwmon_priv *priv;
-	int rpm;
+	u8 prev_mode;
+	int ret;
 
 	priv = dev_get_drvdata(dev);
 	guard(mutex)(&priv->lock);
 	switch (type) {
 	case hwmon_pwm:
+		/*
+		 * Manual PWM control (pwm1_enable=1) is intentionally not
+		 * exposed. On Omen/Victus boards it places the EC in a
+		 * user-defined state that can latch the fans at a fixed low
+		 * or zero speed while temperatures rise, which is a thermal
+		 * safety hazard. Only automatic (2, BIOS-controlled) and max
+		 * (0, full speed) are accepted; both always let the fans
+		 * respond to heat.
+		 */
 		if (attr == hwmon_pwm_input) {
-			if (!is_victus_s_thermal_profile())
-				return -EOPNOTSUPP;
-			/* PWM input is invalid when not in manual mode */
-			if (priv->mode != PWM_MODE_MANUAL)
-				return -EINVAL;
-
-			/* ensure PWM input is within valid fan speeds */
-			rpm = pwm_to_rpm(val, priv);
-			rpm = clamp_val(rpm, priv->min_rpm, priv->max_rpm);
-			priv->pwm = rpm_to_pwm(rpm, priv);
+			priv->pwm = val;
 			return hp_wmi_apply_fan_settings(priv);
 		}
+
 		switch (val) {
 		case PWM_MODE_MAX:
-			priv->mode = PWM_MODE_MAX;
-			return hp_wmi_apply_fan_settings(priv);
-		case PWM_MODE_MANUAL:
-			if (!is_victus_s_thermal_profile())
-				return -EOPNOTSUPP;
-			/*
-			 * When switching to manual mode, set fan speed to
-			 * current RPM values to ensure a smooth transition.
-			 */
-			rpm = hp_wmi_get_fan_speed_victus_s(channel);
-			if (rpm < 0)
-				return rpm;
-			priv->pwm = rpm_to_pwm(rpm / 100, priv);
-			priv->mode = PWM_MODE_MANUAL;
-			return hp_wmi_apply_fan_settings(priv);
 		case PWM_MODE_AUTO:
-			priv->mode = PWM_MODE_AUTO;
-			return hp_wmi_apply_fan_settings(priv);
+		case PWM_MODE_MANUAL:
+			prev_mode = priv->mode;
+			priv->mode = val;
+			ret = hp_wmi_apply_fan_settings(priv);
+			if (ret < 0) {
+				priv->mode = prev_mode;
+				return ret;
+			}
+			return 0;
 		default:
 			return -EINVAL;
 		}
