@@ -678,7 +678,7 @@ static int msi_wmi_platform_write(struct device *dev, enum hwmon_sensor_types ty
 	switch (type) {
 	case hwmon_pwm:
 		switch (attr) {
-		case hwmon_pwm_enable:
+		case hwmon_pwm_enable: {
 			guard(mutex)(&data->wmi_lock);
 
 			buffer[0] = MSI_PLATFORM_AP_SUBFEATURE_FAN_MODE;
@@ -715,6 +715,7 @@ static int msi_wmi_platform_write(struct device *dev, enum hwmon_sensor_types ty
 			}
 
 			return 0;
+		}
 		default:
 			return -EOPNOTSUPP;
 		}
@@ -1422,16 +1423,12 @@ static int msi_wmi_platform_init(struct msi_wmi_platform_data *data)
 
 static int msi_wmi_platform_profile_setup(struct msi_wmi_platform_data *data)
 {
-	int err;
-
 	if (!data->quirks->shift_mode)
 		return 0;
 
 	data->ppdev = devm_platform_profile_register(
 		&data->wdev->dev, "msi-wmi-platform", data,
 		&msi_wmi_platform_profile_ops);
-	if (err)
-		return err;
 
 	return PTR_ERR_OR_ZERO(data->ppdev);
 }
