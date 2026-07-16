@@ -12,6 +12,8 @@
 #include <drm/drm_crtc.h>
 #include "dpu_hw_mdss.h"
 
+struct msm_display_topology;
+
 #define DPU_ENCODER_FRAME_EVENT_DONE			BIT(0)
 #define DPU_ENCODER_FRAME_EVENT_ERROR			BIT(1)
 #define DPU_ENCODER_FRAME_EVENT_PANEL_DEAD		BIT(2)
