@@ -248,7 +248,7 @@ static irqreturn_t acp63_irq_handler(int irq, void *dev_id)
 	if (sdw_dma_irq_flag)
 		return IRQ_WAKE_THREAD;
 
-	if (irq_flag | wake_irq_flag)
+	if (irq_flag || wake_irq_flag)
 		return IRQ_HANDLED;
 	else
 		return IRQ_NONE;
@@ -602,7 +602,7 @@ static int snd_acp63_probe(struct pci_dev *pci,
 		return -ENODEV;
 	}
 
-	ret = pci_request_regions(pci, "AMD ACP6.2 audio");
+	ret = pci_request_regions(pci, "AMD ACP6.3 audio");
 	if (ret < 0) {
 		dev_err(&pci->dev, "pci_request_regions failed\n");
 		goto disable_pci;
@@ -697,7 +697,7 @@ static void acp_disable_msi_on_resume(struct pci_dev *pdev)
 {
 	u16 control;
 
-	if (!pdev || !pdev->msi_cap)
+	if (!pdev->msi_cap)
 		return;
 
 	pci_read_config_word(pdev, pdev->msi_cap + PCI_MSI_FLAGS, &control);
