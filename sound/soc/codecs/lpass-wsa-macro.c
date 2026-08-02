@@ -1129,23 +1129,30 @@ static const struct regmap_config wsa_regmap_config = {
 int wsa_macro_set_spkr_mode(struct snd_soc_component *component, int mode)
 {
 	struct wsa_macro *wsa = snd_soc_component_get_drvdata(component);
+	unsigned int compander1_ctl3 = CDC_WSA_COMPANDER1_CTL3;
+	unsigned int compander1_ctl7 = CDC_WSA_COMPANDER1_CTL7;
+
+	if (wsa->codec_version >= LPASS_CODEC_VERSION_2_5) {
+		compander1_ctl3 = CDC_2_5_WSA_COMPANDER1_CTL3;
+		compander1_ctl7 = CDC_2_5_WSA_COMPANDER1_CTL7;
+	}
 
 	wsa->spkr_mode = mode;
 
 	switch (mode) {
 	case WSA_MACRO_SPKR_MODE_1:
 		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER0_CTL3, 0x80, 0x00);
-		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER1_CTL3, 0x80, 0x00);
+		snd_soc_component_update_bits(component, compander1_ctl3, 0x80, 0x00);
 		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER0_CTL7, 0x01, 0x00);
-		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER1_CTL7, 0x01, 0x00);
+		snd_soc_component_update_bits(component, compander1_ctl7, 0x01, 0x00);
 		snd_soc_component_update_bits(component, CDC_WSA_BOOST0_BOOST_CTL, 0x7C, 0x44);
 		snd_soc_component_update_bits(component, CDC_WSA_BOOST1_BOOST_CTL, 0x7C, 0x44);
 		break;
 	default:
 		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER0_CTL3, 0x80, 0x80);
-		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER1_CTL3, 0x80, 0x80);
+		snd_soc_component_update_bits(component, compander1_ctl3, 0x80, 0x80);
 		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER0_CTL7, 0x01, 0x01);
-		snd_soc_component_update_bits(component, CDC_WSA_COMPANDER1_CTL7, 0x01, 0x01);
+		snd_soc_component_update_bits(component, compander1_ctl7, 0x01, 0x01);
 		snd_soc_component_update_bits(component, CDC_WSA_BOOST0_BOOST_CTL, 0x7C, 0x58);
 		snd_soc_component_update_bits(component, CDC_WSA_BOOST1_BOOST_CTL, 0x7C, 0x58);
 		break;
