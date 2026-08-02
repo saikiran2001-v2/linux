@@ -227,6 +227,8 @@
 				     <0x0 0x91 0x1 IRQ_TYPE_EDGE_RISING>;
 			#io-channel-cells = <1>;
 			#thermal-sensor-cells = <1>;
+
+			status = "disabled";
 		};
 
 		pmk8550_rtc: rtc@6100 {
