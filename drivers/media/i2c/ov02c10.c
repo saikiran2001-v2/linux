@@ -661,11 +661,12 @@ static int ov02c10_power_off(struct device *dev)
 	struct ov02c10 *ov02c10 = to_ov02c10(sd);
 
 	gpiod_set_value_cansleep(ov02c10->reset, 1);
+	usleep_range(1000, 1100);
+
+	clk_disable_unprepare(ov02c10->img_clk);
 
 	regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
 			       ov02c10->supplies);
-
-	clk_disable_unprepare(ov02c10->img_clk);
 
 	return 0;
 }
@@ -682,23 +683,24 @@ static int ov02c10_power_on(struct device *dev)
 		usleep_range(5000, 6000);
 	}
 
-	ret = clk_prepare_enable(ov02c10->img_clk);
-	if (ret < 0) {
-		dev_err(dev, "failed to enable imaging clock: %d", ret);
-		return ret;
-	}
-
 	ret = regulator_bulk_enable(ARRAY_SIZE(ov02c10_supply_names),
 				    ov02c10->supplies);
 	if (ret < 0) {
 		dev_err(dev, "failed to enable regulators: %d", ret);
-		clk_disable_unprepare(ov02c10->img_clk);
+		return ret;
+	}
+
+	ret = clk_prepare_enable(ov02c10->img_clk);
+	if (ret < 0) {
+		dev_err(dev, "failed to enable imaging clock: %d", ret);
+		regulator_bulk_disable(ARRAY_SIZE(ov02c10_supply_names),
+				       ov02c10->supplies);
 		return ret;
 	}
 
 	if (ov02c10->reset) {
 		gpiod_set_value_cansleep(ov02c10->reset, 0);
-		usleep_range(5000, 5500);
+		usleep_range(10000, 11000);
 	}
 
 	return 0;
