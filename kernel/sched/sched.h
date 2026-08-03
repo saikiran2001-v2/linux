@@ -2483,6 +2483,18 @@ static __always_inline u64 poc_cpumask_to_u64(const struct cpumask *mask,
 		/* Slow path: shift required (e.g., Threadripper) */
 		int shift = sd_share->poc_affinity_shift;
 		u64 lo = cpumask_bits(mask)[base_word];
+
+		/*
+		 * sched_poc_aligned is a single global switch, but each LLC
+		 * domain has its own base/shift. A domain whose own base is
+		 * 64-aligned (shift == 0) can still reach here if some other
+		 * domain in the system disabled the static branch. Shifting
+		 * a u64 by 64 is undefined behaviour, so handle it as the
+		 * no-shift case.
+		 */
+		if (!shift)
+			return lo;
+
 		u64 hi = cpumask_bits(mask)[base_word + 1];
 		return (lo >> shift) | (hi << (64 - shift));
 	}
