@@ -4251,11 +4251,11 @@ enum {
 	ALC256_FIXUP_HONOR_MRB_XXX_M1020_AUDIO,
 	ALC245_FIXUP_HP_ENVY_X360_15_FH0XXX,
 	ALC287_FIXUP_ACER_MICMUTE_LED,
+	ALC287_FIXUP_AW88399_I2C_2,
+	ALC287_FIXUP_LENOVO_LEGION_AW88399,
 	ALC236_FIXUP_DELL_HP_POP_NOISE,
 	ALC274_FIXUP_HP_89E9_GPIO,
 	ALC274_FIXUP_HP_VERBS,
-	ALC287_FIXUP_AW88399_I2C_2,
-	ALC287_FIXUP_LENOVO_LEGION_AW88399,
 };
 
 /* A special fixup for Lenovo C940 and Yoga Duet 7;
@@ -6902,6 +6902,16 @@ static const struct hda_fixup alc269_fixups[] = {
 		.chained = true,
 		.chain_id = ALC2XX_FIXUP_HEADSET_MIC,
 	},
+	[ALC287_FIXUP_AW88399_I2C_2] = {
+		.type = HDA_FIXUP_FUNC,
+		.v.func = aw88399_fixup_i2c_two,
+	},
+	[ALC287_FIXUP_LENOVO_LEGION_AW88399] = {
+		.type = HDA_FIXUP_FUNC,
+		.v.func = alc287_fixup_legion_16iax10h_aw88399,
+		.chained = true,
+		.chain_id = ALC287_FIXUP_AW88399_I2C_2,
+	},
 	[ALC236_FIXUP_DELL_HP_POP_NOISE] = {
 		.type = HDA_FIXUP_FUNC,
 		.v.func = alc285_fixup_invalidate_dacs,
@@ -6927,16 +6937,6 @@ static const struct hda_fixup alc269_fixups[] = {
 		},
 		.chained = true,
 		.chain_id = ALC274_FIXUP_HP_89E9_GPIO,
-	},
-	[ALC287_FIXUP_AW88399_I2C_2] = {
-		.type = HDA_FIXUP_FUNC,
-		.v.func = aw88399_fixup_i2c_two,
-	},
-	[ALC287_FIXUP_LENOVO_LEGION_AW88399] = {
-		.type = HDA_FIXUP_FUNC,
-		.v.func = alc287_fixup_legion_16iax10h_aw88399,
-		.chained = true,
-		.chain_id = ALC287_FIXUP_AW88399_I2C_2,
 	},
 };
 
