@@ -62,6 +62,7 @@ struct yoga_slim7x_ec {
 	struct i2c_client *client;
 	struct input_dev *idev;
 	struct led_classdev kbd_backlight;
+	struct led_classdev led_mic_mute;
 	struct mutex lock;
 	/* Last non-zero value read back from EC_BACKLIGHT_STATUS_REG. */
 	u8 saved_kbd_backlight;
@@ -158,6 +159,51 @@ static int yoga_slim7x_kbd_backlight_probe(struct yoga_slim7x_ec *ec)
 	return devm_led_classdev_register(dev, &ec->kbd_backlight);
 }
 
+static enum led_brightness yoga_slim7x_mic_mute_led_get(struct led_classdev *led_cdev)
+{
+	struct yoga_slim7x_ec *ec = container_of(led_cdev, struct yoga_slim7x_ec,
+						 led_mic_mute);
+	int val;
+
+	guard(mutex)(&ec->lock);
+
+	val = i2c_smbus_read_byte_data(ec->client, EC_MIC_MUTE_LED_REG);
+	if (val < 0)
+		return LED_OFF;
+
+	return val ? LED_ON : LED_OFF;
+}
+
+static int yoga_slim7x_mic_mute_led_set(struct led_classdev *led_cdev,
+					enum led_brightness brightness)
+{
+	struct yoga_slim7x_ec *ec = container_of(led_cdev, struct yoga_slim7x_ec,
+						 led_mic_mute);
+
+	guard(mutex)(&ec->lock);
+
+	return i2c_smbus_write_byte_data(ec->client, EC_MIC_MUTE_LED_REG,
+					 brightness ? 0x01 : 0x00);
+}
+
+static int yoga_slim7x_mic_mute_led_probe(struct yoga_slim7x_ec *ec)
+{
+	struct device *dev = &ec->client->dev;
+
+	/*
+	 * Follows the ALSA capture-mute control automatically via
+	 * CONFIG_SND_CTL_LED; the Fn+F4 hotkey above only forwards the
+	 * button press, userspace does the actual mute toggle.
+	 */
+	ec->led_mic_mute.name = "platform::micmute";
+	ec->led_mic_mute.max_brightness = 1;
+	ec->led_mic_mute.default_trigger = "audio-micmute";
+	ec->led_mic_mute.brightness_set_blocking = yoga_slim7x_mic_mute_led_set;
+	ec->led_mic_mute.brightness_get = yoga_slim7x_mic_mute_led_get;
+
+	return devm_led_classdev_register(dev, &ec->led_mic_mute);
+}
+
 static int yoga_slim7x_ec_probe(struct i2c_client *client)
 {
 	struct device *dev = &client->dev;
@@ -186,6 +232,10 @@ static int yoga_slim7x_ec_probe(struct i2c_client *client)
 	ret = yoga_slim7x_kbd_backlight_probe(ec);
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Failed to register keyboard backlight LED\n");
+
+	ret = yoga_slim7x_mic_mute_led_probe(ec);
+	if (ret < 0)
+		return dev_err_probe(dev, ret, "Failed to register mic mute LED\n");
 
 	ret = devm_request_threaded_irq(dev, client->irq,
 					NULL, yoga_slim7x_ec_irq,
