@@ -121,7 +121,6 @@ config EC_LENOVO_YOGA_SLIM7X
 	depends on I2C
 	select LEDS_CLASS
 	select NEW_LEDS
-	select SND_CTL_LED if SND
 	help
 	  Select this option to enable driver for the EC found in the Lenovo
 	  Yoga Slim 7x.

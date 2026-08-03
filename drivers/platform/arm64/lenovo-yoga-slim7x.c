@@ -88,6 +88,16 @@ static irqreturn_t yoga_slim7x_ec_irq(int irq, void *data)
 		input_sync(ec->idev);
 		input_report_key(ec->idev, KEY_MICMUTE, 0);
 		input_sync(ec->idev);
+
+		/*
+		 * This platform has no ALSA capture-mute control for
+		 * SND_CTL_LED to follow (mute is handled in userspace audio
+		 * routing), and unlike the backlight the EC does not toggle
+		 * this LED itself. Toggle it here in lockstep with the
+		 * button that userspace's own mute handling responds to.
+		 */
+		led_set_brightness(&ec->led_mic_mute,
+				   ec->led_mic_mute.brightness ? LED_OFF : LED_ON);
 		break;
 	case EC_IRQ_FN_SPACE:
 		/* Fn+Space: Keyboard backlight toggle */
@@ -191,13 +201,14 @@ static int yoga_slim7x_mic_mute_led_probe(struct yoga_slim7x_ec *ec)
 	struct device *dev = &ec->client->dev;
 
 	/*
-	 * Follows the ALSA capture-mute control automatically via
-	 * CONFIG_SND_CTL_LED; the Fn+F4 hotkey above only forwards the
-	 * button press, userspace does the actual mute toggle.
+	 * No default_trigger: this platform exposes no ALSA capture-mute
+	 * control for SND_CTL_LED to follow (verified against amixer -c0
+	 * controls; mute is handled in userspace audio routing). The
+	 * EC_IRQ_MICMUTE_BUTTON case above toggles this LED directly
+	 * instead, in lockstep with the Fn+F4 button press.
 	 */
 	ec->led_mic_mute.name = "platform::micmute";
 	ec->led_mic_mute.max_brightness = 1;
-	ec->led_mic_mute.default_trigger = "audio-micmute";
 	ec->led_mic_mute.brightness_set_blocking = yoga_slim7x_mic_mute_led_set;
 	ec->led_mic_mute.brightness_get = yoga_slim7x_mic_mute_led_get;
 
