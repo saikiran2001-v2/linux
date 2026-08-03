@@ -10,6 +10,7 @@
 #include <linux/module.h>
 #include <linux/of.h>
 #include <linux/platform_device.h>
+#include <linux/pinctrl/consumer.h>
 #include <linux/pm_runtime.h>
 
 #define CCI_HW_VERSION				0x0
@@ -474,6 +475,11 @@ static void cci_disable_clocks(struct cci *cci)
 static int __maybe_unused cci_suspend_runtime(struct device *dev)
 {
 	struct cci *cci = dev_get_drvdata(dev);
+	int ret;
+
+	ret = pinctrl_pm_select_sleep_state(dev);
+	if (ret)
+		return ret;
 
 	cci_disable_clocks(cci);
 	return 0;
@@ -484,9 +490,15 @@ static int __maybe_unused cci_resume_runtime(struct device *dev)
 	struct cci *cci = dev_get_drvdata(dev);
 	int ret;
 
-	ret = cci_enable_clocks(cci);
+	ret = pinctrl_pm_select_default_state(dev);
 	if (ret)
 		return ret;
+
+	ret = cci_enable_clocks(cci);
+	if (ret) {
+		pinctrl_pm_select_sleep_state(dev);
+		return ret;
+	}
 
 	cci_init(cci);
 	return 0;
