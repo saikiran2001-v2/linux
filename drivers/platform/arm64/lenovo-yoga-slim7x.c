@@ -8,6 +8,7 @@
 #include <linux/err.h>
 #include <linux/i2c.h>
 #include <linux/irqreturn.h>
+#include <linux/leds.h>
 #include <linux/lockdep.h>
 #include <linux/module.h>
 #include <linux/mutex.h>
@@ -60,7 +61,9 @@
 struct yoga_slim7x_ec {
 	struct i2c_client *client;
 	struct input_dev *idev;
+	struct led_classdev kbd_backlight;
 	struct mutex lock;
+	/* Last non-zero value read back from EC_BACKLIGHT_STATUS_REG. */
 	u8 saved_kbd_backlight;
 };
 
@@ -91,12 +94,68 @@ static irqreturn_t yoga_slim7x_ec_irq(int irq, void *data)
 		input_sync(ec->idev);
 		input_report_key(ec->idev, KEY_KBDILLUMTOGGLE, 0);
 		input_sync(ec->idev);
+
+		/*
+		 * The EC toggles the backlight itself; read the resulting
+		 * state back so the LED classdev (and userspace watching it)
+		 * stays in sync with the hardware-driven change.
+		 */
+		val = i2c_smbus_read_byte_data(ec->client, EC_BACKLIGHT_STATUS_REG);
+		if (val >= 0) {
+			if (val)
+				ec->saved_kbd_backlight = val;
+			led_classdev_notify_brightness_hw_changed(&ec->kbd_backlight,
+								  val ? LED_ON : LED_OFF);
+		}
 		break;
 	default:
 		dev_dbg(dev, "Unhandled EC IRQ reason: 0x%02x\n", val);
 	}
 
 	return IRQ_HANDLED;
+}
+
+static enum led_brightness yoga_slim7x_kbd_bl_get(struct led_classdev *led_cdev)
+{
+	struct yoga_slim7x_ec *ec = container_of(led_cdev, struct yoga_slim7x_ec,
+						 kbd_backlight);
+	int val;
+
+	guard(mutex)(&ec->lock);
+
+	val = i2c_smbus_read_byte_data(ec->client, EC_BACKLIGHT_STATUS_REG);
+	if (val < 0)
+		return LED_OFF;
+
+	if (val)
+		ec->saved_kbd_backlight = val;
+
+	return val ? LED_ON : LED_OFF;
+}
+
+static int yoga_slim7x_kbd_bl_set(struct led_classdev *led_cdev,
+				  enum led_brightness brightness)
+{
+	struct yoga_slim7x_ec *ec = container_of(led_cdev, struct yoga_slim7x_ec,
+						 kbd_backlight);
+	u8 val = brightness ? (ec->saved_kbd_backlight ?: 0x01) : 0x00;
+
+	guard(mutex)(&ec->lock);
+
+	return i2c_smbus_write_byte_data(ec->client, EC_BACKLIGHT_STATUS_REG, val);
+}
+
+static int yoga_slim7x_kbd_backlight_probe(struct yoga_slim7x_ec *ec)
+{
+	struct device *dev = &ec->client->dev;
+
+	ec->kbd_backlight.name = "platform::kbd_backlight";
+	ec->kbd_backlight.flags = LED_BRIGHT_HW_CHANGED;
+	ec->kbd_backlight.max_brightness = 1;
+	ec->kbd_backlight.brightness_set_blocking = yoga_slim7x_kbd_bl_set;
+	ec->kbd_backlight.brightness_get = yoga_slim7x_kbd_bl_get;
+
+	return devm_led_classdev_register(dev, &ec->kbd_backlight);
 }
 
 static int yoga_slim7x_ec_probe(struct i2c_client *client)
@@ -123,6 +182,10 @@ static int yoga_slim7x_ec_probe(struct i2c_client *client)
 	ret = input_register_device(ec->idev);
 	if (ret < 0)
 		return dev_err_probe(dev, ret, "Failed to register input device\n");
+
+	ret = yoga_slim7x_kbd_backlight_probe(ec);
+	if (ret < 0)
+		return dev_err_probe(dev, ret, "Failed to register keyboard backlight LED\n");
 
 	ret = devm_request_threaded_irq(dev, client->irq,
 					NULL, yoga_slim7x_ec_irq,
@@ -155,15 +218,10 @@ static int yoga_slim7x_ec_suspend(struct device *dev)
 	struct yoga_slim7x_ec *ec = i2c_get_clientdata(client);
 	int ret;
 
-	/* Save current keyboard backlight state */
-	ret = i2c_smbus_read_byte_data(client, EC_BACKLIGHT_STATUS_REG);
-	if (ret >= 0)
-		ec->saved_kbd_backlight = ret;
-
-	/* Turn off keyboard backlight to save power */
-	ret = i2c_smbus_write_byte_data(client, EC_BACKLIGHT_STATUS_REG, 0x00);
-	if (ret)
-		dev_warn(dev, "Failed to turn off keyboard backlight: %d\n", ret);
+	/* Turn off keyboard backlight to save power; brightness_set_blocking
+	 * caches the on-value in ec->saved_kbd_backlight for resume.
+	 */
+	led_classdev_suspend(&ec->kbd_backlight);
 
 	ret = i2c_smbus_write_byte_data(client, EC_SUSPEND_RESUME_REG, EC_NOTIFY_SCREEN_OFF);
 	if (ret)
@@ -191,12 +249,7 @@ static int yoga_slim7x_ec_resume(struct device *dev)
 		return ret;
 
 	/* Restore keyboard backlight state */
-	if (ec->saved_kbd_backlight) {
-		ret = i2c_smbus_write_byte_data(client, EC_BACKLIGHT_STATUS_REG,
-						 ec->saved_kbd_backlight);
-		if (ret)
-			dev_warn(dev, "Failed to restore keyboard backlight: %d\n", ret);
-	}
+	led_classdev_resume(&ec->kbd_backlight);
 
 	return 0;
 }
