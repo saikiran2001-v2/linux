@@ -24,12 +24,9 @@ properties:
     items:
       - description: Interface clock from GCC
       - description: Board XO source
-      - description: Board XO_A source
       - description: Sleep clock source
 
   power-domains:
-    description:
-      Power domains required for the clock controller to operate
     items:
       - description: MMCX power domain
       - description: MXC power domain
@@ -63,7 +60,6 @@ examples:
         reg = <0x0ab00000 0x10000>;
         clocks = <&gcc GCC_EVA_AHB_CLK>,
                  <&rpmhcc RPMH_CXO_CLK>,
-                 <&rpmhcc RPMH_CXO_CLK_A>,
                  <&sleep_clk>;
         power-domains = <&rpmhpd RPMHPD_MMCX>,
                         <&rpmhpd RPMHPD_MXC>;
