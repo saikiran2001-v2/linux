@@ -96,6 +96,8 @@ static irqreturn_t yoga_slim7x_ec_irq(int irq, void *data)
 		 * this LED itself. Toggle it here in lockstep with the
 		 * button that userspace's own mute handling responds to.
 		 */
+		dev_info(dev, "micmute button: cached brightness=%d, toggling to %d\n",
+			 ec->led_mic_mute.brightness, !ec->led_mic_mute.brightness);
 		led_set_brightness(&ec->led_mic_mute,
 				   ec->led_mic_mute.brightness ? LED_OFF : LED_ON);
 		break;
@@ -189,11 +191,22 @@ static int yoga_slim7x_mic_mute_led_set(struct led_classdev *led_cdev,
 {
 	struct yoga_slim7x_ec *ec = container_of(led_cdev, struct yoga_slim7x_ec,
 						 led_mic_mute);
+	struct device *dev = &ec->client->dev;
+	u8 val = brightness ? 0x01 : 0x00;
+	int ret, readback;
 
 	guard(mutex)(&ec->lock);
 
-	return i2c_smbus_write_byte_data(ec->client, EC_MIC_MUTE_LED_REG,
-					 brightness ? 0x01 : 0x00);
+	ret = i2c_smbus_write_byte_data(ec->client, EC_MIC_MUTE_LED_REG, val);
+	if (ret < 0)
+		return ret;
+
+	/* Temporary diagnostics: confirm the write actually sticks. */
+	readback = i2c_smbus_read_byte_data(ec->client, EC_MIC_MUTE_LED_REG);
+	dev_info(dev, "micmute led: requested=%d wrote=0x%02x readback=%d\n",
+		 brightness, val, readback);
+
+	return 0;
 }
 
 static int yoga_slim7x_mic_mute_led_probe(struct yoga_slim7x_ec *ec)
